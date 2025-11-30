@@ -1,0 +1,14 @@
+# Python
+.venv
+.python-version
+*.pyc
+
+# Build artifacts
+target
+
+# Inspect AI
+logs
+.env
+
+# Override logs source dirs
+!/src/review/screens/logs

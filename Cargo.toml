@@ -1,0 +1,36 @@
+[package]
+name = "gage-cli"
+version = "0.2.0-dev1"
+edition = "2024"
+
+[[bin]]
+name = "gage"
+path = "src/main.rs"
+
+[dependencies]
+chrono = { version = "0.4.41", default-features = false }
+chrono-humanize = "0.2.3"
+clap = { version = "4.5.41", features = ["derive", "env", "wrap_help"] }
+cliclack = "0.3.6"
+console = "0.15.11"
+crossterm = { version = "0.29.0", features = ["serde", "event-stream"] }
+cursive = "0.21.1"
+dirs = "6.0.0"
+dotenvy = "0.15.7"
+env_logger = "0.11.8"
+icu_locale = "2.0.0"
+icu_plurals = "2.0.0"
+itertools = "0.14.0"
+lazy_static = "1.5.0"
+log = "0.4.28"
+parking_lot = "0.12.5"
+pyo3 = "0.27.1"
+regex = "1.11.3"
+serde = "1.0.228"
+serde_json = "1.0.145"
+short-uuid = "0.2.0"
+tabled = "0.20.0"
+terminal_size = "0.4.3"
+textwrap = { version = "0.16.2", features = ["terminal_size"] }
+toml = "0.9.7"
+unicode-width = "0.2.1"

@@ -1,0 +1,84 @@
+{
+  "version": "2.0.0",
+  "problemMatcher": [
+    {
+      "owner": "groktest",
+      "fileLocation": "absolute",
+      "pattern": {
+        "regexp": "^File \"(.*)\", line (\\d+)",
+        "file": 1,
+        "line": 2
+      }
+    },
+    {
+      "owner": "custom",
+      "fileLocation": "relative",
+      "pattern": {
+        "regexp": "panicked at (.*?):([0-9]+):([0-9]+)",
+        "file": 1,
+        "line": 2,
+        "column": 3
+      }
+    }
+  ],
+  "presentation": {
+    "revealProblems": "onProblem",
+    "showReuseMessage": false,
+    "clear": true,
+    "focus": false
+  },
+  "inputs": [
+    {
+      "id": "testName",
+      "description": "Name of the test to run",
+      "type": "promptString"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "just: build",
+      "type": "process",
+      "command": "just",
+      "args": ["build"]
+    },
+    {
+      "label": "just: test",
+      "type": "process",
+      "command": "just",
+      "args": ["test"],
+      "presentation": {
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "groktest: current",
+      "type": "process",
+      "command": "groktest",
+      "args": ["${relativeFile}"]
+    },
+    {
+      "label": "groktest: last",
+      "type": "process",
+      "command": "groktest",
+      "args": ["--last"]
+    },
+    {
+      "label": "cargo: clippy",
+      "type": "process",
+      "command": "cargo",
+      "args": ["clippy"]
+    },
+    {
+      "label": "cargo: test",
+      "type": "process",
+      "command": "cargo",
+      "args": ["test"]
+    },
+    {
+      "label": "cargo: test one",
+      "type": "process",
+      "command": "cargo",
+      "args": ["test", "${input:testName}"]
+    }
+  ]
+}
