@@ -69,8 +69,8 @@ def _strip_trailing_spaces(s: str):
     return "\n".join([line.rstrip() for line in s.split("\n")])
 
 
-def cd(dirname: str):
-    os.chdir(dirname)
+def cd(*path: str):
+    os.chdir(os.path.join(*path))
 
 
 class Chdir:
@@ -171,12 +171,12 @@ _apply_project_paths()
 __all__ = [
     "Chdir",
     "cd",
-    "ls",
+    "copy",
     "ls_list",
+    "ls",
     "make_temp_dir",
     "os",
     "run",
     "touch",
-    "copy",
     "write_file",
 ]
