@@ -25,3 +25,7 @@ _gage_inspect_repo:
         echo "Missing ../gage-inspect - clone the repo and try again"
         exit 1
     fi
+
+# Publish a release
+publish version:
+    uv publish target/wheels/gage_cli-{{version}}-*.whl
