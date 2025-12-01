@@ -54,13 +54,15 @@
       "label": "groktest: current",
       "type": "process",
       "command": "groktest",
-      "args": ["${relativeFile}"]
+      "args": ["${relativeFile}"],
+      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } }
     },
     {
       "label": "groktest: last",
       "type": "process",
       "command": "groktest",
-      "args": ["--last"]
+      "args": ["--last"],
+      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } }
     },
     {
       "label": "cargo: clippy",
