@@ -10,19 +10,19 @@ def check(lines):
     if not lines:
         raise error("message cannot be empty")
 
-    line1 = lines[0]
+    title = lines[0]
 
     # First line starts with [A-Z]
-    if not re.match("[A-Z].*", line1):
-        error("line 1 must start with a capital letter")
+    if not re.match("[A-Z].*", title):
+        error("title must start with a capital letter")
 
-    # First line can't end with tab or space
-    if re.match(r".*[ \t]$", line1):
-        error("line 1 has trailing whitespace")
+    # First line can't end with tab or space or punctuation
+    if re.match(r".*[^0-9a-zA-Z`\"']$", title):
+        error("title has trailing whitespace or punctuation")
 
     # First line <= 50 chars
-    if len(line1) > 50:
-        error("line 1 exceeds 50 chars")
+    if len(title) > 50:
+        error("title exceeds 50 chars")
 
     # Okay to not have detail
     if len(lines) == 1:
@@ -52,11 +52,13 @@ def test():
 
     error_cases = [
         ([], "message cannot be empty"),
-        ([""], "line 1 must start with a capital letter"),
-        (["123"], "line 1 must start with a capital letter"),
-        (["A "], "line 1 has trailing whitespace"),
-        (["`thing`"], "line 1 must start with a capital letter"),
-        (["A" * 51], "line 1 exceeds 50 chars"),
+        ([""], "title must start with a capital letter"),
+        (["123"], "title must start with a capital letter"),
+        (["A "], "title has trailing whitespace or punctuation"),
+        (["A."], "title has trailing whitespace or punctuation"),
+        (["A,"], "title has trailing whitespace or punctuation"),
+        (["`thing`"], "title must start with a capital letter"),
+        (["A" * 51], "title exceeds 50 chars"),
         (["A", "B"], "line 2 must be blank"),
         (["A", "", ""], "line 3 cannot be blank"),
         (["A", "", "A "], "line 3 has trailing whitespace"),
@@ -65,11 +67,19 @@ def test():
 
     for lines, msg in error_cases:
         with raises(SystemExit) as e:
-            check(lines)
+            try:
+                check(lines)
+            except SystemExit:
+                raise
+            else:
+                raise AssertionError(f"did not raise SystemExit: {lines}")
         assert e.value.args[0] == f"Invalid commit message: {msg}", lines
 
     check(["This is okay"])
     check(["This is okay", "", "As is this"])
+    check(["This is 'ok'"])
+    check(["This is `ok`"])
+    check(['This is "ok"'])
     check(["A" * 50])
     check(["A" * 50, "", "B" * 72])
 
