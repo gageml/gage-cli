@@ -123,7 +123,7 @@ pub fn init() {
         }
 
         // Init Python with config
-        let status = ffi::Py_InitializeFromConfig(&mut config);
+        let status = ffi::Py_InitializeFromConfig(&config);
         if !status.err_msg.is_null() {
             let msg = CStr::from_ptr(status.err_msg);
             panic!("Could not initialize Python: {}", msg.to_string_lossy());
