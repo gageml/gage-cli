@@ -5,13 +5,11 @@ on:
   - pull_request
 
 jobs:
-  build:
-    if: false
+  linux:
+    # if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    # - name: Wait for connection
-    #   uses: owenthereal/action-upterm@v1
     - name: Virtual env
       run: python -m venv .venv
     - name: Dependencies
@@ -22,20 +20,21 @@ jobs:
       run: source .venv/bin/activate; cargo test
     - name: Lint
       run: source .venv/bin/activate; cargo clippy
+    - name: Wait for ssh connection
+      uses: owenthereal/action-upterm@v1
 
   macos:
+    if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Wait for connection
-      uses: owenthereal/action-upterm@v1
     - name: Virtual env
-      run: python -m venv .venv
+      run: python3.12 -m venv .venv
     - name: Dependencies
       run: .venv/bin/pip install gage-inspect
     - name: Build
       run: source .venv/bin/activate; cargo build
     - name: Test
       run: source .venv/bin/activate; cargo test
-    - name: Lint
-      run: source .venv/bin/activate; cargo clippy
+    - name: Wait for ssh connection
+      uses: owenthereal/action-upterm@v1
