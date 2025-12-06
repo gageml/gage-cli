@@ -16,8 +16,13 @@ Create an empty directory.
 
     >>> cd(make_temp_dir())
 
+Create a "stop file" to prevent Gage from scanning for files above the
+temp dir.
+
+    >>> touch(".venv")  # Gage treats this as a "stop file"
+
     >>> ls()
-    <empty>
+    .venv
 
 Log dir and Config show default values that are used.
 
