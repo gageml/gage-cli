@@ -6,7 +6,7 @@ on:
 
 jobs:
   linux:
-    if: false
+    # if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -55,9 +55,6 @@ jobs:
         source .venv/bin/activate
         cargo test
 
-    - name: Wait for ssh connection
-      uses: owenthereal/action-upterm@v1
-
     - name: Test (groktest)
       run: |
         source .venv/bin/activate
@@ -65,3 +62,6 @@ jobs:
         groktest .
 
     # Intentionally skip Lint - handled by linux
+
+    # - name: Wait for ssh connection
+    #   uses: owenthereal/action-upterm@v1
