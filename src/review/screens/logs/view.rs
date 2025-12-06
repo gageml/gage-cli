@@ -311,7 +311,6 @@ impl LogsView {
     }
 
     fn items(log_dir: &str) -> Result<Vec<EvalLog>> {
-        Python::initialize();
         Python::attach(|py| {
             Ok(list_logs(py, log_dir)?
                 .into_iter()

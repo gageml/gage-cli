@@ -90,6 +90,7 @@ enum Cmd {
 fn main() -> Exit {
     let args = Args::parse();
 
+    py::init();
     logger::init(args.debug);
     theme::init();
     env::init();

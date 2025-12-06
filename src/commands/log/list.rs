@@ -60,7 +60,6 @@ pub fn main(args: Args) -> Result<()> {
 
     let log_dir = cmd_resolve_log_dir(args.log_dir.as_ref())?;
 
-    Python::initialize();
     Python::attach(|py| {
         let pb = cli::spinner();
         pb.start("Reading logs");

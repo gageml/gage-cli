@@ -131,6 +131,10 @@ pub struct DocstringReturns {
     // pub type_name: Option<String>,
 }
 
+pub fn init() {
+    Python::initialize();
+}
+
 #[cfg(test)]
 mod tests {
     use pyo3::{Python, ffi::c_str, types::PyAnyMethods};

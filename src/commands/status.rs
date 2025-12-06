@@ -34,8 +34,6 @@ pub struct Args {
 }
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
-    Python::initialize();
-
     // Special row types - used for styling
     let mut errors = Vec::new();
     let mut not_found = Vec::new();

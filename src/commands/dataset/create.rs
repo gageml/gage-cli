@@ -19,7 +19,6 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
-    Python::initialize();
     Python::attach(|py| {
         let task = select_task_dialog(py, args.task.as_deref(), args.path.as_deref(), args.yes)?;
         println!("TODO something with {task:?}");

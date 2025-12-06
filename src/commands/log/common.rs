@@ -103,7 +103,6 @@ impl LogOpDialog {
     {
         cli::intro(style(&self.title).bold())?;
 
-        Python::initialize();
         Python::attach(|py| {
             // Use spinner when reading logs
             let pb = cli::spinner();

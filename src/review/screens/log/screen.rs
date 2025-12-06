@@ -74,7 +74,6 @@ impl LogScreen {
     }
 
     pub fn set_log_location(&mut self, location: &str) {
-        Python::initialize();
         Python::attach(|py| match read_log(py, location) {
             Ok(log) => {
                 let log = Arc::new(log);

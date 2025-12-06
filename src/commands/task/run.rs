@@ -87,7 +87,7 @@ pub fn main(args: Args) -> Result<()> {
 
 fn run_dialog(args: Args) -> Result<DialogResult> {
     cli::intro(style("Run task").bold())?;
-    Python::initialize();
+
     Python::attach(|py| {
         let task = select_task_dialog(py, args.task.as_deref(), args.path.as_deref(), args.yes)?;
         let task_doc = get_task_doc(py, &task)?;

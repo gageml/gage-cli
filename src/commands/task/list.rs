@@ -20,7 +20,6 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
-    Python::initialize();
     Python::attach(|py| {
         let tasks = list_tasks_dialog(py, args.path.as_deref())?;
         if tasks.is_empty() {

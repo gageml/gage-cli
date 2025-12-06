@@ -21,7 +21,6 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
-    Python::initialize();
     Python::attach(|py| {
         let task = select_task(py, Some(&args.task), args.path.as_deref())?;
 

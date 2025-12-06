@@ -75,7 +75,7 @@ pub fn main(args: Args) -> Result<()> {
 
 fn eval_dialog(args: Args) -> Result<DialogResult> {
     cli::intro(style("Evaluate tasks").bold())?;
-    Python::initialize();
+
     Python::attach(|py| {
         let tasks = select_tasks_dialog(py, args.path.as_deref(), &args.tasks, args.yes)?;
 

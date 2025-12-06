@@ -36,7 +36,6 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
-    Python::initialize();
     Python::attach(|py| {
         let log_dir = cmd_resolve_log_dir(args.log_dir.as_ref())?;
         let logs = list_logs(py, &log_dir)?;

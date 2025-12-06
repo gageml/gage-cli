@@ -21,7 +21,6 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
-    Python::initialize();
     Python::attach(|py| {
         let datasets = list_datasets_dialog(py, args.path.as_deref())?;
         if datasets.is_empty() {
