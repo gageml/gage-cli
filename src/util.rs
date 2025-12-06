@@ -138,7 +138,7 @@ pub fn first_line(s: &str) -> (&str, bool) {
 }
 
 pub fn find_try_parents(name: &str) -> Result<Option<PathBuf>, io::Error> {
-    let mut cur_dir = PathBuf::from(".").canonicalize().unwrap();
+    let mut cur_dir = env::current_dir().unwrap();
     loop {
         match cur_dir.join(name).canonicalize() {
             Ok(path) => break Ok(Some(path)),
