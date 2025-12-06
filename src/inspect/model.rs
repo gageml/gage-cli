@@ -465,11 +465,11 @@ mod tests {
         types::{PyAnyMethods, PyModule},
     };
 
-    use crate::inspect::model::ChatMessage;
+    use crate::{inspect::model::ChatMessage, py};
 
     #[test]
     fn test_chat_message_extract() {
-        Python::initialize();
+        py::init();
         Python::attach(|py| {
             let test_mod = PyModule::from_code(
                 py,

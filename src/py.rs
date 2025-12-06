@@ -100,40 +100,38 @@ impl FromPyObject<'_, '_> for EpochMillis {
     }
 }
 
+static INIT_SYNC: std::sync::Once = std::sync::Once::new();
+
 pub fn init() {
-    if unsafe { ffi::Py_IsInitialized() } != 0 {
-        panic!("Python environment is already initialized");
-    }
+    INIT_SYNC.call_once_force(|_| unsafe {
+        if ffi::Py_IsInitialized() != 0 {
+            panic!("Python is already initialized");
+        }
 
-    // Init config
-    let mut config: ffi::PyConfig = unsafe { std::mem::zeroed() };
-    unsafe {
+        // Init config
+        let mut config: ffi::PyConfig = std::mem::zeroed();
         ffi::PyConfig_InitPythonConfig(&mut config);
-    }
 
-    // If `VIRTUAL_ENV` set, assume we're running in an virtual env and
-    // explicitly set Python executable. This is the default behavior on
-    // some systems (e.g. Linux) but not others (e.g. macOS). This
-    // standardizes this behavior across platforms.
-    if let Ok(venv_path) = std::env::var("VIRTUAL_ENV") {
-        let path = PathBuf::from(venv_path).join("bin").join("python3");
-        let value = CString::new(path.as_os_str().as_bytes()).unwrap();
-        unsafe {
+        // If `VIRTUAL_ENV` set, assume we're running in an virtual env and
+        // explicitly set Python executable. This is the default behavior on
+        // some systems (e.g. Linux) but not others (e.g. macOS). This
+        // standardizes this behavior across platforms.
+        if let Ok(venv_path) = std::env::var("VIRTUAL_ENV") {
+            let path = PathBuf::from(venv_path).join("bin").join("python3");
+            let value = CString::new(path.as_os_str().as_bytes()).unwrap();
             ffi::PyConfig_SetBytesString(&mut config, &mut config.executable, value.as_ptr());
         }
-    }
 
-    // Init Python with config
-    let status = unsafe { ffi::Py_InitializeFromConfig(&mut config) };
-    if !status.err_msg.is_null() {
-        let msg = unsafe { CStr::from_ptr(status.err_msg) };
-        panic!("Could not initialize Python: {}", msg.to_string_lossy());
-    }
+        // Init Python with config
+        let status = ffi::Py_InitializeFromConfig(&mut config);
+        if !status.err_msg.is_null() {
+            let msg = CStr::from_ptr(status.err_msg);
+            panic!("Could not initialize Python: {}", msg.to_string_lossy());
+        }
 
-    // Release the GIL (copied from `Python::initialize()`)
-    unsafe {
+        // Release the GIL (copied from `Python::initialize()`)
         ffi::PyEval_SaveThread();
-    }
+    });
 }
 
 pub fn py_call<'py, A>(
@@ -177,11 +175,11 @@ pub struct DocstringReturns {
 mod tests {
     use pyo3::{Python, ffi::c_str, types::PyAnyMethods};
 
-    use crate::py::EpochMillis;
+    use crate::py::{self, EpochMillis};
 
     #[test]
     fn test_millis_extract() {
-        Python::initialize();
+        py::init();
         Python::attach(|py| {
             // Parse from UTC millis float
             let f = py.eval(c_str!("1759254091325.5388"), None, None).unwrap();
