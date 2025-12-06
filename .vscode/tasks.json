@@ -36,19 +36,11 @@
   ],
   "tasks": [
     {
-      "label": "just: build",
+      "label": "groktest: all",
       "type": "process",
-      "command": "just",
-      "args": ["build"]
-    },
-    {
-      "label": "just: test",
-      "type": "process",
-      "command": "just",
-      "args": ["test"],
-      "presentation": {
-        "panel": "dedicated"
-      }
+      "command": "groktest",
+      "args": ["."],
+      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } }
     },
     {
       "label": "groktest: current",
