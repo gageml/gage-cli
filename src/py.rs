@@ -1,4 +1,9 @@
-use std::fmt::Display;
+use std::{
+    ffi::{CStr, CString},
+    fmt::Display,
+    os::unix::ffi::OsStrExt,
+    path::PathBuf,
+};
 
 use chrono::{DateTime, FixedOffset, Local, ParseResult, Utc};
 use chrono_humanize::HumanTime;
@@ -6,6 +11,7 @@ use pyo3::{
     Borrowed, Bound, FromPyObject, PyAny, PyErr, PyResult, Python,
     call::PyCallArgs,
     exceptions::{PyTypeError, PyValueError},
+    ffi,
     types::{PyAnyMethods, PyModule},
 };
 
@@ -94,6 +100,42 @@ impl FromPyObject<'_, '_> for EpochMillis {
     }
 }
 
+pub fn init() {
+    if unsafe { ffi::Py_IsInitialized() } != 0 {
+        panic!("Python environment is already initialized");
+    }
+
+    // Init config
+    let mut config: ffi::PyConfig = unsafe { std::mem::zeroed() };
+    unsafe {
+        ffi::PyConfig_InitPythonConfig(&mut config);
+    }
+
+    // If `VIRTUAL_ENV` set, assume we're running in an virtual env and
+    // explicitly set Python executable. This is the default behavior on
+    // some systems (e.g. Linux) but not others (e.g. macOS). This
+    // standardizes this behavior across platforms.
+    if let Ok(venv_path) = std::env::var("VIRTUAL_ENV") {
+        let path = PathBuf::from(venv_path).join("bin").join("python3");
+        let value = CString::new(path.as_os_str().as_bytes()).unwrap();
+        unsafe {
+            ffi::PyConfig_SetBytesString(&mut config, &mut config.executable, value.as_ptr());
+        }
+    }
+
+    // Init Python with config
+    let status = unsafe { ffi::Py_InitializeFromConfig(&mut config) };
+    if !status.err_msg.is_null() {
+        let msg = unsafe { CStr::from_ptr(status.err_msg) };
+        panic!("Could not initialize Python: {}", msg.to_string_lossy());
+    }
+
+    // Release the GIL (copied from `Python::initialize()`)
+    unsafe {
+        ffi::PyEval_SaveThread();
+    }
+}
+
 pub fn py_call<'py, A>(
     py: Python<'py>,
     mod_name: &str,
@@ -129,10 +171,6 @@ pub struct DocstringReturns {
     // pub args: Vec<String>,
     pub description: Option<String>,
     // pub type_name: Option<String>,
-}
-
-pub fn init() {
-    Python::initialize();
 }
 
 #[cfg(test)]
