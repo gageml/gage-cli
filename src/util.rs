@@ -144,7 +144,10 @@ pub fn find_try_parents(name: &str) -> Result<Option<PathBuf>, io::Error> {
             Ok(path) => break Ok(Some(path)),
             Err(e) => match e.kind() {
                 io::ErrorKind::NotFound => {
-                    if let Some(parent) = cur_dir.parent() {
+                    // Try parent if cur dir isn't a project
+                    if !has_project_file(&cur_dir)
+                        && let Some(parent) = cur_dir.parent()
+                    {
                         cur_dir = parent.to_path_buf();
                     } else {
                         break Ok(None);
@@ -154,6 +157,20 @@ pub fn find_try_parents(name: &str) -> Result<Option<PathBuf>, io::Error> {
             },
         }
     }
+}
+
+/// List of project markers
+///
+/// Used to stop searching for a file in parent dirs.
+const PROJECT_FILES: [&str; 3] = ["gage.toml", "pyproject.toml", ".venv"];
+
+fn has_project_file(dir: &Path) -> bool {
+    for name in PROJECT_FILES {
+        if dir.join(name).exists() {
+            return true;
+        }
+    }
+    false
 }
 
 pub fn fit_path_name(name: &str, max_len: usize) -> String {
