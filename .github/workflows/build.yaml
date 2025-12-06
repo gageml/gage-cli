@@ -6,35 +6,62 @@ on:
 
 jobs:
   linux:
-    # if: false
+    if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - name: Virtual env
       run: python -m venv .venv
-    - name: Dependencies
-      run: .venv/bin/pip install gage-inspect
     - name: Build
-      run: source .venv/bin/activate; cargo build
-    - name: Test
-      run: source .venv/bin/activate; cargo test
+      run: |
+        source .venv/bin/activate
+        cargo build
+    - name: Test (cargo)
+      run: |
+        source .venv/bin/activate
+        pip install gage-inspect
+        cargo test
+    - name: Test (groktest)
+      run: |
+        source .venv/bin/activate
+        pip install groktest
+        groktest .
     - name: Lint
-      run: source .venv/bin/activate; cargo clippy
-    - name: Wait for ssh connection
-      uses: owenthereal/action-upterm@v1
+      run: |
+        source .venv/bin/activate
+        cargo clippy
+
+    # - name: Wait for ssh connection
+    #   uses: owenthereal/action-upterm@v1
 
   macos:
-    if: false
+    # if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Virtual env
       run: python3.12 -m venv .venv
-    - name: Dependencies
-      run: .venv/bin/pip install gage-inspect
     - name: Build
-      run: source .venv/bin/activate; cargo build
-    - name: Test
-      run: source .venv/bin/activate; cargo test
+      run: |
+        source .venv/bin/activate
+        cargo build
+    - name: Test (cargo)
+      run: |
+        source .venv/bin/activate
+        pip install gage-inspect
+        cargo test
+    - name: Test (cargo)
+      run: |
+        source .venv/bin/activate
+        cargo test
+
     - name: Wait for ssh connection
       uses: owenthereal/action-upterm@v1
+
+    - name: Test (groktest)
+      run: |
+        source .venv/bin/activate
+        pip install groktest
+        groktest .
+
+    # Intentionally skip Lint - handled by linux
