@@ -1,0 +1,23 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit to use for the release
+        required: true
+
+jobs:
+  linux:
+    # if: false
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: $"{{ ref }}"
+    - name: Release
+      run: maturin build --release
+    - name: Upload files
+      uses: actions/upload-artifact@v4
+      with:
+        path: target/wheels/*.*
