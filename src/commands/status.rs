@@ -12,8 +12,12 @@ use tabled::{
 };
 
 use crate::{
-    config::Config, error::Error, inspect::log::resolve_log_dir, py::py_call, result::Result,
-    util::TableExt,
+    config::Config,
+    error::Error,
+    inspect::log::resolve_log_dir,
+    py::py_call,
+    result::Result,
+    util::{TableExt, relpath_str},
 };
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -44,24 +48,55 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
         // gage_inspect
         table.push_record(["gage_inspect version", &pkg_version(py, "gage_inspect")]);
         if args.verbose {
-            table.push_record(["gage_inspect path", &pkg_path(py, "gage_inspect")]);
+            table.push_record([
+                "gage_inspect path",
+                relpath_str(&pkg_path(py, "gage_inspect")),
+            ]);
         }
 
         // inspect_ai
         table.push_record(["inspect_ai version", &pkg_version(py, "inspect_ai")]);
         if args.verbose {
-            table.push_record(["inspect_ai path", &pkg_path(py, "inspect_ai")]);
+            table.push_record(["inspect_ai path", relpath_str(&pkg_path(py, "inspect_ai"))]);
         }
 
-        // Python system path
-        if args.verbose {
-            let sys = py.import("sys").unwrap();
-            let sys_path = sys
-                .getattr("path")
+        // Python version
+        let sys = py.import("sys").unwrap();
+        table.push_record([
+            "Python version",
+            sys.getattr("version")
                 .unwrap()
-                .extract::<Vec<String>>()
-                .unwrap();
-            table.push_record(["sys.path", &sys_path.join("\n")]);
+                .extract::<String>()
+                .unwrap()
+                .split(' ')
+                .next()
+                .unwrap(),
+        ]);
+
+        if args.verbose {
+            // Python exe
+            table.push_record([
+                "Python executable",
+                relpath_str(
+                    &sys.getattr("executable")
+                        .unwrap()
+                        .extract::<String>()
+                        .unwrap(),
+                ),
+            ]);
+
+            // Python system path
+            table.push_record([
+                "Python sys path",
+                &sys.getattr("path")
+                    .unwrap()
+                    .extract::<Vec<String>>()
+                    .unwrap()
+                    .iter()
+                    .map(|path| relpath_str(path))
+                    .collect::<Vec<&str>>()
+                    .join("\n"),
+            ]);
         }
     });
 

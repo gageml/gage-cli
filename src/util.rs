@@ -2,7 +2,7 @@ use core::fmt;
 use std::{
     borrow::Cow,
     env, io,
-    path::{Path, PathBuf},
+    path::{MAIN_SEPARATOR, Path, PathBuf},
 };
 
 use tabled::{
@@ -73,6 +73,20 @@ impl<T> UnwrapExt<T> for Option<T> {
 pub fn relpath(path: &Path) -> &Path {
     let cwd = env::current_dir().unwrap();
     path.strip_prefix(cwd).unwrap_or(path)
+}
+
+pub fn relpath_str(path: &str) -> &str {
+    let cwd = env::current_dir().unwrap();
+    if let Some(rel) = path.strip_prefix(cwd.to_str().unwrap()) {
+        // Stripped prefix leaves leading path sep - strip that as well
+        if !rel.is_empty() && rel.chars().next().unwrap() == MAIN_SEPARATOR {
+            &rel[1..]
+        } else {
+            rel
+        }
+    } else {
+        path
+    }
 }
 
 pub trait TableExt {
