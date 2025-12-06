@@ -10,9 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    # - uses: actions/setup-python@v6
-    #   with:
-    #     python-version: 'pypy3.12'
     # - name: Wait for connection
     #   uses: owenthereal/action-upterm@v1
     - name: Virtual env
@@ -32,3 +29,13 @@ jobs:
     - uses: actions/checkout@v4
     - name: Wait for connection
       uses: owenthereal/action-upterm@v1
+    - name: Virtual env
+      run: python -m venv .venv
+    - name: Dependencies
+      run: .venv/bin/pip install gage-inspect
+    - name: Build
+      run: source .venv/bin/activate; cargo build
+    - name: Test
+      run: source .venv/bin/activate; cargo test
+    - name: Lint
+      run: source .venv/bin/activate; cargo clippy

@@ -40,21 +40,30 @@
       "type": "process",
       "command": "groktest",
       "args": ["."],
-      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } }
+      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } },
+      "dependsOn": ["cargo: build"]
     },
     {
       "label": "groktest: current",
       "type": "process",
       "command": "groktest",
       "args": ["${relativeFile}"],
-      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } }
+      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } },
+      "dependsOn": ["cargo: build"]
     },
     {
       "label": "groktest: last",
       "type": "process",
       "command": "groktest",
       "args": ["--last"],
-      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } }
+      "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } },
+      "dependsOn": ["cargo: build"]
+    },
+    {
+      "label": "cargo: build",
+      "type": "process",
+      "command": "cargo",
+      "args": ["build"]
     },
     {
       "label": "cargo: clippy",
