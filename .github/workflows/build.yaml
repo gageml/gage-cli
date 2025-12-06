@@ -6,7 +6,7 @@ on:
 
 jobs:
   linux:
-    if: false
+    # if: false
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -40,7 +40,7 @@ jobs:
     #   uses: owenthereal/action-upterm@v1
 
   macos:
-    if: false
+    # if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
