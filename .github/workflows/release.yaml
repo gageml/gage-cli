@@ -9,8 +9,40 @@ on:
 
 jobs:
   linux:
-    # if: false
+    if: false
     runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.ref }}
+
+    - name: Virtual env
+      run: python3.12 -m venv .venv
+
+    - name: Release
+      run: |
+        source .venv/bin/activate
+        pip install maturin
+        maturin build --release
+
+    - name: Publish to PyPI
+      env:
+        MATURIN_PYPI_TOKEN: ${{ secrets.MATURIN_PYPI_TOKEN }}
+      run: |
+        source .venv/bin/activate
+        maturin upload --non-interactive target/wheels/*.*
+
+    - name: Upload files
+      uses: actions/upload-artifact@v4
+      with:
+        path: target/wheels/*.*
+
+    # - name: Wait for ssh connection
+    #   uses: owenthereal/action-upterm@v1
+
+  macos:
+    # if: false
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
       with:
