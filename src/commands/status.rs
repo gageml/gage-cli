@@ -41,13 +41,27 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     // Package versions
     table.push_record(["gage version", VERSION]);
     Python::attach(|py| {
+        // gage_inspect
         table.push_record(["gage_inspect version", &pkg_version(py, "gage_inspect")]);
         if args.verbose {
             table.push_record(["gage_inspect path", &pkg_path(py, "gage_inspect")]);
         }
+
+        // inspect_ai
         table.push_record(["inspect_ai version", &pkg_version(py, "inspect_ai")]);
         if args.verbose {
             table.push_record(["inspect_ai path", &pkg_path(py, "inspect_ai")]);
+        }
+
+        // Python system path
+        if args.verbose {
+            let sys = py.import("sys").unwrap();
+            let sys_path = sys
+                .getattr("path")
+                .unwrap()
+                .extract::<Vec<String>>()
+                .unwrap();
+            table.push_record(["sys.path", &sys_path.join("\n")]);
         }
     });
 
@@ -97,28 +111,9 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
         "Config",
         &path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy(),
     ]);
-
-    // match if let Some(path) = config.as_ref() {
-    //     Config::from_file(path)
-    // } else {
-    //     Config::from_default()
-    // } {
-    //     Ok(config) => {
-    //         let path = PathBuf::from(&config.path);
-    //         table.push_record([
-    //             "Config",
-    //             &path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy(),
-    //         ]);
-    //     }
-    //     Err(Error::IO(e)) if e.kind() == io::ErrorKind::NotFound => {
-    //         table.push_record(["Config", &e.to_string()]);
-    //         not_found.push(table.count_records() - 1);
-    //     }
-    //     Err(e) => {
-    //         table.push_record(["Config", &e.to_string()]);
-    //         errors.push(table.count_records() - 1);
-    //     }
-    // };
+    if !path.exists() {
+        not_found.push(table.count_records() - 1);
+    }
 
     // Active profile
     table.push_record([

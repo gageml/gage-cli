@@ -22,15 +22,15 @@ Create an empty directory.
 Log dir and Config show default values that are used.
 
     >>> run("gage status")
-    ╭──────────────────────┬────────────╮
-    │ gage version         │ 0.2.0-dev1 │
-    │ gage_inspect version │ 0.2.0.dev2 │
-    │ inspect_ai version   │ 0.3.150    │
-    │ .env                 │            │
-    │ Log dir              │ logs       │
-    │ Config               │ gage.toml  │
-    │ Active profile       │            │
-    ╰──────────────────────┴────────────╯
+    ╭──────────────────────┬───────────╮
+    │ gage version         │ 0.2.0     │
+    │ gage_inspect version │ 0.2.0     │
+    │ inspect_ai version   │ 0.3.152   │
+    │ .env                 │           │
+    │ Log dir              │ logs      │
+    │ Config               │ gage.toml │
+    │ Active profile       │           │
+    ╰──────────────────────┴───────────╯
 
 ## Profile
 
@@ -65,12 +65,28 @@ Gage creates `.env`.
 Status shows configured log dir.
 
     >>> run("gage status")
-    ╭──────────────────────┬────────────╮
-    │ gage version         │ 0.2.0-dev1 │
-    │ gage_inspect version │ 0.2.0.dev2 │
-    │ inspect_ai version   │ 0.3.150    │
-    │ .env                 │ .env       │
-    │ Log dir              │ logs2      │
-    │ Config               │ gage.toml  │
-    │ Active profile       │ dev        │
-    ╰──────────────────────┴────────────╯
+    ╭──────────────────────┬───────────╮
+    │ gage version         │ 0.2.0     │
+    │ gage_inspect version │ 0.2.0     │
+    │ inspect_ai version   │ 0.3.152   │
+    │ .env                 │ .env      │
+    │ Log dir              │ logs2     │
+    │ Config               │ gage.toml │
+    │ Active profile       │ dev       │
+    ╰──────────────────────┴───────────╯
+
+Use `--verboase`.
+
+    >>> run("gage status --verbose")  # +wildcard -space
+    ╭──────────────────────┬───────────────────────────────────╮
+    │ gage version         │ 0.2.0                             │
+    │ gage_inspect version │ 0.2.0                             │
+    │ gage_inspect path    │ ...                               │
+    │ inspect_ai version   │ 0.3.152                           │
+    │ inspect_ai path      │ ...                               │
+    │ sys.path             │ ...                               │
+    │ .env                 │ .env                              │
+    │ Log dir              │ logs2                             │
+    │ Config               │ gage.toml                         │
+    │ Active profile       │ dev                               │
+    ╰──────────────────────┴───────────────────────────────────╯
