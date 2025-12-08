@@ -5,72 +5,40 @@ on:
   - pull_request
 
 jobs:
-  linux:
-    # if: false
-    runs-on: ubuntu-latest
+  posix:
+    strategy:
+      matrix:
+        # python: ["3.12", "3.14"]
+        python: ["3.12"]
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Virtual env
-      run: python3.12 -m venv .venv
+      - name: Virtual env
+        run: python${{ matrix.python }} -m venv .venv
 
-    - name: Build
-      run: |
-        source .venv/bin/activate
-        cargo build
+      - name: Build
+        run: |
+          source .venv/bin/activate
+          cargo build
 
-    - name: Test (cargo)
-      run: |
-        source .venv/bin/activate
-        pip install gage-inspect
-        cargo test
+      - name: Test (cargo)
+        run: |
+          source .venv/bin/activate
+          pip install gage-inspect
+          cargo test
 
-    - name: Test (groktest)
-      run: |
-        source .venv/bin/activate
-        pip install groktest
-        groktest .
+      - name: Test (groktest)
+        run: |
+          source .venv/bin/activate
+          pip install groktest
+          groktest .
 
-    - name: Lint
-      run: |
-        source .venv/bin/activate
-        cargo clippy
-
-    # - name: Wait for ssh connection
-    #   uses: owenthereal/action-upterm@v1
-
-  macos:
-    # if: false
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Virtual env
-      run: python3.12 -m venv .venv
-
-    - name: Build
-      run: |
-        source .venv/bin/activate
-        cargo build
-
-    - name: Test (cargo)
-      run: |
-        source .venv/bin/activate
-        pip install gage-inspect
-        cargo test
-
-    - name: Test (cargo)
-      run: |
-        source .venv/bin/activate
-        cargo test
-
-    - name: Test (groktest)
-      run: |
-        source .venv/bin/activate
-        pip install groktest
-        groktest .
-
-    # Intentionally skip Lint - handled by linux
-
-    # - name: Wait for ssh connection
-    #   uses: owenthereal/action-upterm@v1
+      - name: Lint
+        run: |
+          source .venv/bin/activate
+          cargo clippy
