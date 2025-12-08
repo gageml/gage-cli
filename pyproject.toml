@@ -28,6 +28,3 @@ build-backend = "maturin"
 [tool.groktest]
 include = "tests/**/*.md"
 python.init = "from tests import *"
-
-[tool.maturin]
-features = ["pyo3/abi3-py310"]
