@@ -1,9 +1,4 @@
-use std::{
-    ffi::{CStr, CString},
-    fmt::Display,
-    os::unix::ffi::OsStrExt,
-    path::PathBuf,
-};
+use std::fmt::Display;
 
 use chrono::{DateTime, FixedOffset, Local, ParseResult, Utc};
 use chrono_humanize::HumanTime;
@@ -11,7 +6,6 @@ use pyo3::{
     Borrowed, Bound, FromPyObject, PyAny, PyErr, PyResult, Python,
     call::PyCallArgs,
     exceptions::{PyTypeError, PyValueError},
-    ffi,
     types::{PyAnyMethods, PyModule},
 };
 
@@ -100,38 +94,39 @@ impl FromPyObject<'_, '_> for EpochMillis {
     }
 }
 
-static INIT_SYNC: std::sync::Once = std::sync::Once::new();
+// static INIT_SYNC: std::sync::Once = std::sync::Once::new();
 
 pub fn init() {
-    INIT_SYNC.call_once_force(|_| unsafe {
-        if ffi::Py_IsInitialized() != 0 {
-            panic!("Python is already initialized");
-        }
+    Python::initialize();
+    // INIT_SYNC.call_once_force(|_| unsafe {
+    //     if ffi::Py_IsInitialized() != 0 {
+    //         panic!("Python is already initialized");
+    //     }
 
-        // Init config
-        let mut config: ffi::PyConfig = std::mem::zeroed();
-        ffi::PyConfig_InitPythonConfig(&mut config);
+    //     // Init config
+    //     let mut config: ffi::PyConfig = std::mem::zeroed();
+    //     ffi::PyConfig_InitPythonConfig(&mut config);
 
-        // If `VIRTUAL_ENV` set, assume we're running in an virtual env and
-        // explicitly set Python executable. This is the default behavior on
-        // some systems (e.g. Linux) but not others (e.g. macOS). This
-        // standardizes this behavior across platforms.
-        if let Ok(venv_path) = std::env::var("VIRTUAL_ENV") {
-            let path = PathBuf::from(venv_path).join("bin").join("python3");
-            let value = CString::new(path.as_os_str().as_bytes()).unwrap();
-            ffi::PyConfig_SetBytesString(&mut config, &mut config.executable, value.as_ptr());
-        }
+    //     // If `VIRTUAL_ENV` set, assume we're running in an virtual env and
+    //     // explicitly set Python executable. This is the default behavior on
+    //     // some systems (e.g. Linux) but not others (e.g. macOS). This
+    //     // standardizes this behavior across platforms.
+    //     if let Ok(venv_path) = std::env::var("VIRTUAL_ENV") {
+    //         let path = PathBuf::from(venv_path).join("bin").join("python3");
+    //         let value = CString::new(path.as_os_str().as_bytes()).unwrap();
+    //         ffi::PyConfig_SetBytesString(&mut config, &mut config.executable, value.as_ptr());
+    //     }
 
-        // Init Python with config
-        let status = ffi::Py_InitializeFromConfig(&config);
-        if !status.err_msg.is_null() {
-            let msg = CStr::from_ptr(status.err_msg);
-            panic!("Could not initialize Python: {}", msg.to_string_lossy());
-        }
+    //     // Init Python with config
+    //     let status = ffi::Py_InitializeFromConfig(&config);
+    //     if !status.err_msg.is_null() {
+    //         let msg = CStr::from_ptr(status.err_msg);
+    //         panic!("Could not initialize Python: {}", msg.to_string_lossy());
+    //     }
 
-        // Release the GIL (copied from `Python::initialize()`)
-        ffi::PyEval_SaveThread();
-    });
+    //     // Release the GIL (copied from `Python::initialize()`)
+    //     ffi::PyEval_SaveThread();
+    // });
 }
 
 pub fn py_call<'py, A>(
