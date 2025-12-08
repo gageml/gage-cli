@@ -108,7 +108,6 @@ pub fn init() {
         }
 
         // Init config
-
         let mut config: ffi::PyConfig = std::mem::zeroed();
         ffi::PyConfig_InitPythonConfig(&mut config);
 
