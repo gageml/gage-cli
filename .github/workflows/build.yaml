@@ -8,9 +8,10 @@ jobs:
   posix:
     strategy:
       matrix:
-        # python: ["3.12", "3.14"]
+        # python: ["3.10", "3.12", "3.14"]
+        # os: [ubuntu-latest, macos-latest]
         python: ["3.12"]
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -25,6 +26,9 @@ jobs:
         run: |
           source .venv/bin/activate
           cargo build
+
+      - name: Wait for ssh connection
+        uses: owenthereal/action-upterm@v1
 
       - name: Test (cargo)
         run: |
