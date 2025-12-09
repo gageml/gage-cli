@@ -166,7 +166,9 @@ def ls_list(
     return paths if unsorted else sorted(paths)
 
 
-_apply_project_paths()
+# Add build target dir to path unless running in CI
+if not os.getenv("CI"):
+    _apply_project_paths()
 
 __all__ = [
     "Chdir",
