@@ -6,14 +6,13 @@ on:
       ref:
         description: Commit to use for the release
         required: true
+
 jobs:
   posix:
     strategy:
       matrix:
-        # python: ["3.12", "3.14"]
-        # os: [ubuntu-latest, macos-latest]
-        python: ["3.14"]
-        os: [macos-latest]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        os: [ubuntu-latest, macos-latest]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -23,13 +22,14 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - name: Wait for ssh connection
-        uses: owenthereal/action-upterm@v1
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
 
       - name: Virtual env
         run: python${{ matrix.python }} -m venv .venv
 
-      - name: Release
+      - name: Package and install
         run: |
           source .venv/bin/activate
           pip install maturin
