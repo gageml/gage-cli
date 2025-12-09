@@ -8,7 +8,7 @@ jobs:
   posix:
     strategy:
       matrix:
-        # python: ["3.10", "3.12", "3.14"]
+        # python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         # os: [ubuntu-latest, macos-latest]
         python: ["3.12"]
         os: [macos-latest]
@@ -19,6 +19,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
       - name: Virtual env
         run: python${{ matrix.python }} -m venv .venv
 
@@ -27,20 +31,13 @@ jobs:
           source .venv/bin/activate
           cargo build
 
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.10"
-
-      - name: Wait for ssh connection
-        uses: owenthereal/action-upterm@v1
-
       - name: Test (cargo)
         run: |
           source .venv/bin/activate
           pip install gage-inspect
-          cargo test  # PYTHONPATH=.venv/lib/python${{ matrix.python }}/site-packages
+          PYTHONPATH=.venv/lib/python${{ matrix.python }}/site-packages cargo test
 
-      - name: Package
+      - name: Package and install
         run: |
           source .venv/bin/activate
           pip install maturin
@@ -51,9 +48,13 @@ jobs:
       - name: Test (groktest)
         run: |
           source .venv/bin/activate
+          pip install groktest
           groktest .
 
       - name: Lint
         run: |
           source .venv/bin/activate
           cargo clippy
+
+      # - name: Wait for ssh connection
+      #   uses: owenthereal/action-upterm@v1
