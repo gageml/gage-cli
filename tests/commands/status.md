@@ -27,16 +27,16 @@ temp dir.
 Log dir and Config show default values that are used.
 
     >>> run("gage status")  # +wildcard -space
-    ╭──────────────────────┬────────────╮
-    │ gage version         │ 0.2...     │
-    │ gage_inspect version │ 0.2...     │
-    │ inspect_ai version   │ 0.3...     │
-    │ Python version       │ 3...       │
-    │ .env                 │            │
-    │ Log dir              │ logs       │
-    │ Config               │ gage.toml  │
-    │ Active profile       │            │
-    ╰──────────────────────┴────────────╯
+    ╭──────────────────────┬───────────╮
+    │ gage version         │ 0.2...    │
+    │ gage_inspect version │ 0.2...    │
+    │ inspect_ai version   │ 0.3...    │
+    │ Python version       │ 3...      │
+    │ .env                 │           │
+    │ Log dir              │ logs      │
+    │ Config               │ gage.toml │
+    │ Active profile       │           │
+    ╰──────────────────────┴───────────╯
 
 ## Profile
 
@@ -71,16 +71,16 @@ Gage creates `.env`.
 Status shows configured log dir.
 
     >>> run("gage status")  # +wildcard -space
-    ╭──────────────────────┬────────────╮
-    │ gage version         │ 0.2...     │
-    │ gage_inspect version │ 0.2...     │
-    │ inspect_ai version   │ 0.3...     │
-    │ Python version       │ 3...       │
-    │ .env                 │ .env       │
-    │ Log dir              │ logs2      │
-    │ Config               │ gage.toml  │
-    │ Active profile       │ dev        │
-    ╰──────────────────────┴────────────╯
+    ╭──────────────────────┬───────────╮
+    │ gage version         │ 0.2...    │
+    │ gage_inspect version │ 0.2...    │
+    │ inspect_ai version   │ 0.3...    │
+    │ Python version       │ 3...      │
+    │ .env                 │ .env      │
+    │ Log dir              │ logs2     │
+    │ Config               │ gage.toml │
+    │ Active profile       │ dev       │
+    ╰──────────────────────┴───────────╯
 
 Use `--verboase`.
 
