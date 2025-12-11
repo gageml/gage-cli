@@ -7,20 +7,23 @@ def error(msg):
 
 
 def check(lines):
+    # Strip comments
+    lines = [line for line in lines if not line[:1] == "#"]
+
     if not lines:
         raise error("message cannot be empty")
 
     title = lines[0]
 
-    # First line starts with [A-Z]
+    # Title starts with [A-Z]
     if not re.match("[A-Z].*", title):
         error("title must start with a capital letter")
 
-    # First line can't end with tab or space or punctuation
+    # Title can't end with tab or space or punctuation
     if re.match(r".*[^0-9a-zA-Z`\"']$", title):
         error("title has trailing whitespace or punctuation")
 
-    # First line <= 50 chars
+    # Title <= 50 chars
     if len(title) > 50:
         error("title exceeds 50 chars")
 
@@ -31,6 +34,10 @@ def check(lines):
     # One blank line after title
     if lines[1] != "":
         error("line 2 must be blank")
+
+    # Not uncommon to leave a single training black - is okay
+    if len(lines) == 2:
+        return
 
     if lines[2].strip() == "":
         error("line 3 cannot be blank")
@@ -82,6 +89,9 @@ def test():
     check(['This is "ok"'])
     check(["A" * 50])
     check(["A" * 50, "", "B" * 72])
+    check(["Okay", "#"])
+    check(["Okay", "# " + "A" * 72])
+    check(["Okay", ""])  # Single trailing empty line okay
 
 
 if __name__ == "__main__":
