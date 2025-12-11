@@ -1,5 +1,11 @@
 # Changes
 
+## 0.2.2 (release pending)
+
+Fix:
+
+- Bug in `gage profile use` when .env file didn't end with LF
+
 ## 0.2.1 (2025-12-10)
 
 Enhancements:
