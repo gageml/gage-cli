@@ -6,39 +6,44 @@ on:
       ref:
         description: Commit to use for the release
         required: true
+
 jobs:
   posix:
     strategy:
       matrix:
-        python: ["3.12"]
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         os: [ubuntu-latest, macos-latest]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ inputs.ref }}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
-    - name: Virtual env
-      run: python${{ matrix.python }} -m venv .venv
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
 
-    - name: Release
-      run: |
-        source .venv/bin/activate
-        pip install maturin
-        maturin build --release
+      - name: Virtual env
+        run: python${{ matrix.python }} -m venv .venv
 
-    - name: Upload files
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.os }}-py${{ matrix.python }}
-        path: target/wheels/
+      - name: Package and install
+        run: |
+          source .venv/bin/activate
+          pip install maturin
+          maturin build --release
 
-    - name: Publish to PyPI
-      env:
-        MATURIN_PYPI_TOKEN: ${{ secrets.MATURIN_PYPI_TOKEN }}
-      run: |
-        source .venv/bin/activate
-        maturin upload --non-interactive target/wheels/*.*
+      - name: Upload files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-py${{ matrix.python }}
+          path: target/wheels/
+
+      - name: Publish to PyPI
+        env:
+          MATURIN_PYPI_TOKEN: ${{ secrets.MATURIN_PYPI_TOKEN }}
+        run: |
+          source .venv/bin/activate
+          maturin upload --non-interactive target/wheels/*.*

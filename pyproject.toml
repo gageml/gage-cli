@@ -2,7 +2,7 @@
 name = "gage-cli"
 description = "Gage command line tools"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 classifiers = [
     "License :: OSI Approved :: MIT License",
     "Development Status :: 3 - Alpha",

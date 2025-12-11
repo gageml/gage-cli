@@ -5,72 +5,55 @@ on:
   - pull_request
 
 jobs:
-  linux:
-    # if: false
-    runs-on: ubuntu-latest
+  posix:
+    strategy:
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        os: [ubuntu-latest, macos-latest]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Virtual env
-      run: python3.12 -m venv .venv
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
 
-    - name: Build
-      run: |
-        source .venv/bin/activate
-        cargo build
+      - name: Virtual env
+        run: python${{ matrix.python }} -m venv .venv
 
-    - name: Test (cargo)
-      run: |
-        source .venv/bin/activate
-        pip install gage-inspect
-        cargo test
+      - name: Build
+        run: |
+          source .venv/bin/activate
+          cargo build
 
-    - name: Test (groktest)
-      run: |
-        source .venv/bin/activate
-        pip install groktest
-        groktest .
+      - name: Test (cargo)
+        run: |
+          source .venv/bin/activate
+          pip install gage-inspect
+          PY_CONFIG_INIT=1 cargo test
+          # PYTHONPATH=.venv/lib/python${{ matrix.python }}/site-packages cargo test
 
-    - name: Lint
-      run: |
-        source .venv/bin/activate
-        cargo clippy
+      - name: Package and install
+        run: |
+          source .venv/bin/activate
+          pip install maturin
+          maturin build --release
+          pip install target/wheels/*.whl
+          gage status -v
 
-    # - name: Wait for ssh connection
-    #   uses: owenthereal/action-upterm@v1
+      - name: Test (groktest)
+        run: |
+          source .venv/bin/activate
+          pip install groktest
+          groktest .
 
-  macos:
-    # if: false
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v4
+      - name: Lint
+        run: |
+          source .venv/bin/activate
+          cargo clippy
 
-    - name: Virtual env
-      run: python3.12 -m venv .venv
-
-    - name: Build
-      run: |
-        source .venv/bin/activate
-        cargo build
-
-    - name: Test (cargo)
-      run: |
-        source .venv/bin/activate
-        pip install gage-inspect
-        cargo test
-
-    - name: Test (cargo)
-      run: |
-        source .venv/bin/activate
-        cargo test
-
-    - name: Test (groktest)
-      run: |
-        source .venv/bin/activate
-        pip install groktest
-        groktest .
-
-    # Intentionally skip Lint - handled by linux
-
-    # - name: Wait for ssh connection
-    #   uses: owenthereal/action-upterm@v1
+      # - name: Wait for ssh connection
+      #   uses: owenthereal/action-upterm@v1
