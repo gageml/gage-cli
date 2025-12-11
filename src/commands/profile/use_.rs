@@ -28,35 +28,30 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     let config_parent = &config.path.parent().unwrap();
     let dotenv = config_parent.join(".env");
     let lines = if dotenv.exists() {
-        let mut buf = io::BufReader::new(File::open(&dotenv)?);
-        let mut lines = Vec::new();
-        loop {
-            let mut line = String::new();
-            let read = buf.read_line(&mut line)?;
-            if read == 0 {
-                break;
-            }
-            lines.push(line);
-        }
-        lines
+        read_lines(&dotenv)?
     } else {
         Vec::new()
     };
 
     // Write new .env with GAGE_PROFILE set to new profile
     let mut file = File::create(&dotenv)?;
-    let mut wrote_profile = false;
     let eol = detect_eol(&lines).unwrap_or_else(|| "\n".into());
     let gage_profile_line = format!("GAGE_PROFILE={profile_name}{eol}");
+    let mut wrote_profile = false;
+    let mut wrote_eol = false;
     for line in lines {
         if line.starts_with("GAGE_PROFILE=") {
             file.write_all(gage_profile_line.as_bytes())?;
             wrote_profile = true;
         } else {
+            wrote_eol = line.ends_with(&eol);
             file.write_all(line.as_bytes())?;
         }
     }
     if !wrote_profile {
+        if !wrote_eol {
+            file.write_all(eol.as_bytes())?;
+        }
         file.write_all(gage_profile_line.as_bytes())?;
     }
     file.flush()?;
@@ -66,6 +61,20 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     println!("{status}");
 
     Ok(())
+}
+
+fn read_lines(path: &Path) -> Result<Vec<String>> {
+    let mut buf = io::BufReader::new(File::open(path)?);
+    let mut lines = Vec::new();
+    loop {
+        let mut line = String::new();
+        let read = buf.read_line(&mut line)?;
+        if read == 0 {
+            break;
+        }
+        lines.push(line);
+    }
+    Ok(lines)
 }
 
 fn detect_eol(lines: &[String]) -> Option<String> {
