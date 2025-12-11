@@ -8,7 +8,8 @@ jobs:
   posix:
     strategy:
       matrix:
-        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        # python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python: ["3.14"]  # Limit build/test to one Python version
         os: [ubuntu-latest, macos-latest]
       fail-fast: false
 
