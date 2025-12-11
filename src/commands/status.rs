@@ -1,4 +1,4 @@
-use std::{env, io, path::PathBuf};
+use std::{collections::HashMap, env, io, path::PathBuf};
 
 use clap::Args as ArgsTrait;
 use pyo3::{Python, types::PyAnyMethods};
@@ -28,6 +28,10 @@ pub struct Args {
     #[arg(long)]
     log_dir: Option<PathBuf>,
 
+    /// Show a status value
+    #[arg(long, hide = true)]
+    attr: Option<String>,
+
     /// Show more detail
     #[arg(short, long)]
     verbose: bool,
@@ -39,6 +43,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     let mut not_found = Vec::new();
 
     let mut table = Builder::new();
+    let mut attrs = HashMap::<String, String>::new();
 
     // Package versions
     table.push_record(["gage version", VERSION]);
@@ -119,17 +124,15 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     match resolve_log_dir(args.log_dir.as_ref()) {
         Ok(path) => {
             let path = PathBuf::from(path);
-            table.push_record([
-                "Log dir",
-                &path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy(),
-            ]);
+            let relpath = path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy();
+            attrs.insert("log_dir".into(), relpath.to_string());
+            table.push_record(["Log dir", &relpath]);
         }
         Err(Error::IO(e)) if e.kind() == io::ErrorKind::NotFound => {
             let path = PathBuf::from(e.to_string());
-            table.push_record([
-                "Log dir",
-                &path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy(),
-            ]);
+            let relpath = path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy();
+            attrs.insert("log_dir".into(), relpath.to_string());
+            table.push_record(["Log dir", &relpath]);
             not_found.push(table.count_records() - 1);
         }
         Err(e) => {
@@ -176,9 +179,17 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
         ));
     }
 
-    println!("{table}");
-
-    Ok(())
+    if let Some(attr) = args.attr {
+        if let Some(val) = attrs.get(&attr) {
+            println!("{val}");
+            Ok(())
+        } else {
+            Err(Error::general(format!("Unknown attr '{attr}'")))
+        }
+    } else {
+        println!("{table}");
+        Ok(())
+    }
 }
 
 pub fn pkg_version<'py>(py: Python<'py>, pkg: &str) -> String {

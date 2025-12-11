@@ -849,8 +849,7 @@ pub struct EvalSampleScore {
 pub fn resolve_log_dir(log_dir: Option<&PathBuf>) -> Result<String> {
     let log_dir = log_dir
         .cloned()
-        .or_else(|| env::get("INSPECT_LOG_DIR").map(PathBuf::from))
-        .or_else(|| env::get("GAGE_LOG").map(PathBuf::from));
+        .or_else(|| env::get("INSPECT_LOG_DIR").map(PathBuf::from));
     if let Some(log_dir) = log_dir {
         canonical_string(&log_dir)
     } else {

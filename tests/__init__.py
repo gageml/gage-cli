@@ -189,12 +189,24 @@ def normalize_table(s: str):
     return "\n".join([apply_subs(line) for line in s.split("\n")])
 
 
+def cat(*parts: str):
+    with open(os.path.join(*parts), "r") as f:
+        s = f.read()
+        if not s:
+            print("<empty>")
+        else:
+            if s[-1:] == "\n":
+                s = s[:-1]
+            print(s)
+
+
 # Add build target dir to path unless running in CI
 if not os.getenv("CI"):
     _apply_project_paths()
 
 __all__ = [
     "Chdir",
+    "cat",
     "cd",
     "copy",
     "ls_list",
