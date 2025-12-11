@@ -28,3 +28,4 @@ build-backend = "maturin"
 [tool.groktest]
 include = "tests/**/*.md"
 python.init = "from tests import *"
+option.functions = "tests"

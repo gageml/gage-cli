@@ -5,7 +5,7 @@ import shutil
 import subprocess
 import tempfile
 import time
-from typing import cast
+from typing import Any, cast
 
 
 def run(
@@ -166,6 +166,29 @@ def ls_list(
     return paths if unsorted else sorted(paths)
 
 
+def option_table(val: Any):
+    if True:
+        return normalize_table
+
+
+TABLE_SUBS = [
+    (re.compile("─+┬"), "─┬"),
+    (re.compile("─+╮"), "─╮"),
+    (re.compile(" +│"), " │"),
+    (re.compile("╰─+"), "╰─"),
+    (re.compile("─+╯"), "─╯"),
+]
+
+
+def normalize_table(s: str):
+    def apply_subs(line: str):
+        for p, repl in TABLE_SUBS:
+            line = p.sub(repl, line)
+        return line
+
+    return "\n".join([apply_subs(line) for line in s.split("\n")])
+
+
 # Add build target dir to path unless running in CI
 if not os.getenv("CI"):
     _apply_project_paths()
@@ -178,6 +201,7 @@ __all__ = [
     "ls",
     "make_temp_dir",
     "os",
+    "option_table",
     "run",
     "touch",
     "write_file",

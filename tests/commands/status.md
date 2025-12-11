@@ -26,12 +26,12 @@ temp dir.
 
 Log dir and Config show default values that are used.
 
-    >>> run("gage status")  # +wildcard -space
+    >>> run("gage status")  # +parse +table
     ╭──────────────────────┬───────────╮
-    │ gage version         │ 0.2...    │
-    │ gage_inspect version │ 0.2...    │
-    │ inspect_ai version   │ 0.3...    │
-    │ Python version       │ 3...      │
+    │ gage version         │ 0.2.{}    │
+    │ gage_inspect version │ 0.2.{}    │
+    │ inspect_ai version   │ 0.3.{}    │
+    │ Python version       │ 3.{}      │
     │ .env                 │           │
     │ Log dir              │ logs      │
     │ Config               │ gage.toml │
@@ -70,12 +70,12 @@ Gage creates `.env`.
 
 Status shows configured log dir.
 
-    >>> run("gage status")  # +wildcard -space
+    >>> run("gage status")  # +parse +table
     ╭──────────────────────┬───────────╮
-    │ gage version         │ 0.2...    │
-    │ gage_inspect version │ 0.2...    │
-    │ inspect_ai version   │ 0.3...    │
-    │ Python version       │ 3...      │
+    │ gage version         │ 0.2.{}    │
+    │ gage_inspect version │ 0.2.{}    │
+    │ inspect_ai version   │ 0.3.{}    │
+    │ Python version       │ 3.{}      │
     │ .env                 │ .env      │
     │ Log dir              │ logs2     │
     │ Config               │ gage.toml │
@@ -84,18 +84,18 @@ Status shows configured log dir.
 
 Use `--verboase`.
 
-    >>> run("gage status --verbose")  # +wildcard -space
-    ╭──────────────────────┬───────────────────────────────────╮
-    │ gage version         │ 0.2...                            │
-    │ gage_inspect version │ 0.2...                            │
-    │ gage_inspect path    │ ...                               │
-    │ inspect_ai version   │ 0.3...                            │
-    │ inspect_ai path      │ ...                               │
-    │ Python version       │ 3...                              │
-    │ Python executable    │ ...                               │
-    │ Python sys path      │ ...                               │
-    │ .env                 │ .env                              │
-    │ Log dir              │ logs2                             │
-    │ Config               │ gage.toml                         │
-    │ Active profile       │ dev                               │
-    ╰──────────────────────┴───────────────────────────────────╯
+    >>> run("gage status --verbose")  # +parse +table
+    ╭──────────────────────┬────────────╮
+    │ gage version         │ 0.2.{}     │
+    │ gage_inspect version │ 0.2.{}     │
+    │ gage_inspect path    │ {}         │
+    │ inspect_ai version   │ 0.3.{}     │
+    │ inspect_ai path      │ {}         │
+    │ Python version       │ 3.{}       │
+    │ Python executable    │ {}         │
+    │ Python sys path      │ {}         │
+    │ .env                 │ .env       │
+    │ Log dir              │ logs2      │
+    │ Config               │ gage.toml  │
+    │ Active profile       │ dev        │
+    ╰──────────────────────┴────────────╯
