@@ -12,3 +12,4 @@ logs
 
 # Override logs source dirs
 !/src/review/screens/logs
+!/tests/logs
