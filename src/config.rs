@@ -28,7 +28,7 @@ impl Default for Config {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Default, Debug)]
 pub struct Profile {
     pub help: Option<String>,
     pub secrets: Option<String>,

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 
 use cursive::{ScreenId, view::ViewWrapper, views::BoxedView, wrap_impl};
 
@@ -17,7 +17,7 @@ pub struct AppView {
 }
 
 impl AppView {
-    pub fn new(log_dir: &str, dev_mode: bool) -> Self {
+    pub fn new(log_dir: &Path, dev_mode: bool) -> Self {
         let mut inner = ScreensView::new();
         let logs = inner.add_screen(BoxedView::new(Box::new(LogsScreen::new(log_dir))));
         let log = inner.add_screen(BoxedView::new(Box::new(LogScreen::new())));

@@ -1,7 +1,7 @@
 use std::{
     collections::BTreeSet,
     ffi::OsStr,
-    fs, io,
+    fs,
     ops::{Range, RangeFrom},
     os::unix::ffi::OsStrExt,
     path::PathBuf,
@@ -23,7 +23,7 @@ use tabled::{
 use crate::{
     dialog::DialogResult,
     error::Error,
-    inspect::log::{EvalLogInfo, LogFilter, list_logs_filter, read_log_header, resolve_log_dir},
+    inspect::log::{EvalLogInfo, LogFilter, list_logs_filter, read_log_header},
     py,
     result::Result,
     theme::Colors,
@@ -32,7 +32,7 @@ use crate::{
 
 pub struct LogOpDialog {
     title: String,
-    log_dir: String,
+    log_dir: PathBuf,
     filter: LogFilter,
     log_specs: Vec<LogSpec>,
     show_prompt: bool,
@@ -70,7 +70,7 @@ impl LogOpDialog {
         }
     }
 
-    pub fn log_dir(mut self, log_dir: String) -> Self {
+    pub fn log_dir(mut self, log_dir: PathBuf) -> Self {
         self.log_dir = log_dir;
         self
     }
@@ -526,18 +526,4 @@ macro_rules! plural {
         }
         base
     }};
-}
-
-/// Wrapped call to `inspect::resolve_log_dir` with user facing error
-/// message.
-///
-/// Meant to be used with `?` operator, e.g.
-/// `cmd_resolve_log_dir(args.log_dir)?`
-pub fn cmd_resolve_log_dir(log_dir: Option<&PathBuf>) -> Result<String> {
-    match resolve_log_dir(log_dir) {
-        Err(Error::IO(e)) if e.kind() == io::ErrorKind::NotFound => Err(Error::general(format!(
-            "Logs directory '{e}' does not exist"
-        ))),
-        other => other,
-    }
 }

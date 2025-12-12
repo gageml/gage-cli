@@ -1,3 +1,4 @@
+import fnmatch
 import os
 import re
 import shlex
@@ -10,8 +11,8 @@ from typing import Any, cast
 
 def run(
     cmd: str,
-    cwd: str | None = None,
     env: dict[str, str] | None = None,
+    cwd: str | None = None,
     capture: bool = False,
     delenv: list[str] | None = None,
     strip_ansi=True,
@@ -134,13 +135,26 @@ def ls(
     root: str = ".",
     follow_links: bool = False,
     include_dirs: bool = False,
+    ignore: str | list[str] | None = None,
 ):
     paths = ls_list(root, follow_links, include_dirs)
+    if ignore:
+        paths = filter_paths(paths, ignore)
     if not paths:
         print("<empty>")
     else:
         for path in paths:
             print(path)
+
+
+def filter_paths(paths: list[str], ignore: str | list[str]):
+    if isinstance(ignore, str):
+        ignore = [ignore]
+    return [
+        path
+        for path in paths
+        if not any((fnmatch.fnmatch(path, pattern) for pattern in ignore))
+    ]
 
 
 def ls_list(

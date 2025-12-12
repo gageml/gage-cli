@@ -123,25 +123,19 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     let cwd = env::current_dir().unwrap();
 
     // log dir
-    match resolve_log_dir(args.log_dir.as_ref()) {
-        Ok(path) => {
-            let path = PathBuf::from(path);
-            let relpath = path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy();
-            attrs.insert("log_dir".into(), relpath.to_string());
-            table.push_record(["Log dir", &relpath]);
-        }
-        Err(Error::IO(e)) if e.kind() == io::ErrorKind::NotFound => {
-            let path = PathBuf::from(e.to_string());
-            let relpath = path.strip_prefix(&cwd).unwrap_or(&path).to_string_lossy();
-            attrs.insert("log_dir".into(), relpath.to_string());
-            table.push_record(["Log dir", &relpath]);
-            not_found.push(table.count_records() - 1);
-        }
-        Err(e) => {
-            table.push_record(["Log dir", &e.to_string()]);
-            errors.push(table.count_records() - 1);
-        }
-    };
+    let log_dir = resolve_log_dir(args.log_dir.as_ref());
+    let relpath = log_dir
+        .strip_prefix(&cwd)
+        .unwrap_or(&log_dir)
+        .to_str()
+        .unwrap()
+        .to_string();
+    table.push_record(["Log dir", &relpath]);
+    attrs.insert("log_dir".into(), relpath);
+    if !log_dir.exists() {
+    } else {
+        not_found.push(table.count_records() - 1);
+    }
 
     // Config
     let path = PathBuf::from(&config.path);

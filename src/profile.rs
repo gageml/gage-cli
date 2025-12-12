@@ -1,25 +1,21 @@
 use std::path::PathBuf;
 
-use crate::{config::Config, env, error::Error, result::Result, secrets::Secrets};
+use crate::{
+    config::{Config, Profile},
+    env,
+    result::Result,
+    secrets::Secrets,
+};
 
 pub fn apply_profile_with_secrets(config: &Config) -> Result<()> {
     apply_profile_impl(config, true)
 }
 
-// pub fn apply_profile(config: &Config) -> Result<()> {
-//     apply_profile_impl(config, false)
-// }
-
 fn apply_profile_impl(config: &Config, with_secrets: bool) -> Result<()> {
     if let Some(profile_name) = env::get("GAGE_PROFILE") {
         // Resolve profile in config
-        let profile = config.profiles.get(&profile_name).ok_or_else(|| {
-            Error::general(format!(
-                "Profile {} (specified by GAGE_PROFILE) is not defined in {}",
-                profile_name,
-                config.path.to_string_lossy()
-            ))
-        })?;
+        let empty = Profile::default();
+        let profile = config.profiles.get(&profile_name).unwrap_or(&empty);
 
         // Secrets
         let secrets = if with_secrets && let Some(path) = profile.secrets.as_deref() {
@@ -52,9 +48,11 @@ fn apply_profile_impl(config: &Config, with_secrets: bool) -> Result<()> {
         // Env
         for (name, val) in &profile.env {
             if std::env::var(name).is_err() {
+                log::debug!("Setting profile env {name}={val}");
                 let val = secrets.as_ref().map(|s| s.apply(val)).unwrap_or(val.into());
-                log::debug!("{name}={val}");
                 unsafe { std::env::set_var(name, val) };
+            } else {
+                log::debug!("Skipping profile env {name} (already set)")
             }
         }
     }

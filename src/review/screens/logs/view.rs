@@ -1,4 +1,7 @@
-use std::cmp::Ordering;
+use std::{
+    cmp::Ordering,
+    path::{Path, PathBuf},
+};
 
 use cursive::{
     ScreenId,
@@ -222,7 +225,7 @@ fn fmt_log_id(log: &EvalLog) -> &str {
 }
 
 pub struct LogsView {
-    log_dir: String,
+    log_dir: PathBuf,
     filter: Option<Filter>,
     table_screen: ScreenId,
     error_screen: ScreenId,
@@ -230,7 +233,7 @@ pub struct LogsView {
 }
 
 impl LogsView {
-    pub fn new(log_dir: &str) -> Self {
+    pub fn new(log_dir: &Path) -> Self {
         let mut inner = ScreensView::new();
         let table_screen = inner.add_screen(BoxedView::new(Box::new(
             LogsTable::new()
@@ -268,8 +271,8 @@ impl LogsView {
         view
     }
 
-    pub fn log_dir(&self) -> &str {
-        self.log_dir.as_str()
+    pub fn log_dir(&self) -> &Path {
+        &self.log_dir
     }
 
     fn default_empty_msg() -> StyledString {
@@ -311,7 +314,7 @@ impl LogsView {
         }
     }
 
-    fn items(log_dir: &str) -> Result<Vec<EvalLog>> {
+    fn items(log_dir: &Path) -> Result<Vec<EvalLog>> {
         py::init();
         Python::attach(|py| {
             Ok(list_logs(py, log_dir)?

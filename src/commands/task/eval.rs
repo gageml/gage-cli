@@ -13,6 +13,7 @@ use crate::{
     inspect::{log::resolve_log_dir, task::eval_tasks},
     py,
     result::Result,
+    util::PathExt,
 };
 
 #[derive(ArgsTrait, Debug)]
@@ -168,10 +169,7 @@ fn eval_dialog(args: Args) -> Result<DialogResult> {
             .collect::<Vec<_>>();
 
         // Log dir
-        let log_dir = match resolve_log_dir(args.log_dir.as_ref()) {
-            Ok(path) => path,
-            Err(_) => "logs".into(),
-        };
+        let log_dir = resolve_log_dir(args.log_dir.as_ref());
 
         // Run eval
         eval_tasks(
@@ -186,7 +184,7 @@ fn eval_dialog(args: Args) -> Result<DialogResult> {
             args.sandbox,
             args.epochs,
             4,
-            log_dir,
+            log_dir.expect_string(),
         )?;
 
         Ok(DialogResult::Done)

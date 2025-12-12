@@ -2,10 +2,10 @@ use clap::Args as ArgsTrait;
 use std::path::PathBuf;
 
 use crate::{
-    commands::log::common::{LogOpDialog, LogOpSuccessMap, LogSelect, cmd_resolve_log_dir},
+    commands::log::common::{LogOpDialog, LogOpSuccessMap, LogSelect},
     dialog::handle_dialog_result,
     error::Error,
-    inspect::log::LogFilter,
+    inspect::log::{LogFilter, resolve_log_dir},
     plural,
     result::Result,
 };
@@ -34,7 +34,7 @@ pub fn main(args: Args) -> Result<()> {
     let log_specs = LogSelect::parse_specs(&args.specs)?;
     handle_dialog_result(
         LogOpDialog::new("Restore logs")
-            .log_dir(cmd_resolve_log_dir(args.log_dir.as_ref())?)
+            .log_dir(resolve_log_dir(args.log_dir.as_ref()))
             .filter(LogFilter::Deleted)
             .log_specs(log_specs)
             .show_prompt(!args.yes)

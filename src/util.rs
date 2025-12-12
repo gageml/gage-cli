@@ -192,6 +192,16 @@ pub fn fit_path_name(name: &str, max_len: usize) -> String {
     }
 }
 
+pub trait PathExt {
+    fn expect_string(&self) -> String;
+}
+
+impl PathExt for Path {
+    fn expect_string(&self) -> String {
+        self.to_str().unwrap().to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::util::fit_path_name;

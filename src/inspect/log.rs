@@ -15,7 +15,6 @@ use pyo3::{
 
 use crate::{
     env,
-    error::Error,
     inspect::{
         Args, Attributes, Metadata,
         error::EvalError,
@@ -25,7 +24,7 @@ use crate::{
     },
     py::{Any, EpochMillis, py_call},
     result::Result,
-    util::find_try_parents,
+    util::{PathExt, find_try_parents},
 };
 
 pub const LOG_VERSION: u16 = 2;
@@ -846,37 +845,22 @@ pub struct EvalSampleScore {
     pub sample_id: Option<SampleId>,
 }
 
-pub fn resolve_log_dir(log_dir: Option<&PathBuf>) -> Result<String> {
-    let log_dir = log_dir
+pub fn resolve_log_dir(log_dir: Option<&PathBuf>) -> PathBuf {
+    log_dir
         .cloned()
-        .or_else(|| env::get("INSPECT_LOG_DIR").map(PathBuf::from));
-    if let Some(log_dir) = log_dir {
-        canonical_string(&log_dir)
-    } else {
-        // Look for 'logs' in the directory hierarchy
-        if let Some(log_dir) = find_try_parents("logs")? {
-            Ok(log_dir.to_string_lossy().into())
-        } else {
-            Err(Error::IO(io::Error::new(io::ErrorKind::NotFound, "logs")))
-        }
-    }
+        .or_else(|| env::get("INSPECT_LOG_DIR").map(PathBuf::from))
+        .or_else(|| {
+            find_try_parents("logs")
+                .or_else(|e| {
+                    log::warn!("Error finding logs dir: {e}");
+                    Ok::<Option<PathBuf>, io::Error>(None)
+                })
+                .unwrap()
+        })
+        .unwrap_or(PathBuf::from("logs"))
 }
 
-fn canonical_string(path: &Path) -> crate::result::Result<String> {
-    Ok(path
-        .canonicalize()
-        .map_err(|e| match e.kind() {
-            io::ErrorKind::NotFound => {
-                io::Error::new(io::ErrorKind::NotFound, path.to_str().unwrap())
-            }
-            _ => e,
-        })?
-        .to_str()
-        .unwrap()
-        .to_string())
-}
-
-pub fn list_logs<'py>(py: Python<'py>, log_dir: &str) -> Result<Vec<EvalLogInfo>> {
+pub fn list_logs<'py>(py: Python<'py>, log_dir: &Path) -> Result<Vec<EvalLogInfo>> {
     list_logs_filter(py, log_dir, LogFilter::None)
 }
 
@@ -887,7 +871,7 @@ pub enum LogFilter {
 
 pub fn list_logs_filter<'py, F>(
     py: Python<'py>,
-    log_dir: &str,
+    log_dir: &Path,
     filter: F,
 ) -> Result<Vec<EvalLogInfo>>
 where
@@ -900,10 +884,14 @@ where
         LogFilter::Deleted => true,
         LogFilter::None => false,
     };
-    let mut logs: Vec<EvalLogInfo> =
-        py_call(py, "gage_inspect.log", "list_logs", (log_dir, deleted))?
-            .extract()
-            .unwrap();
+    let mut logs: Vec<EvalLogInfo> = py_call(
+        py,
+        "gage_inspect.log",
+        "list_logs",
+        (log_dir.expect_string(), deleted),
+    )?
+    .extract()
+    .unwrap();
     // Sort using name, which contains a leading create timestamp,
     // showing most recently created logs first
     logs.sort_by(|lhs, rhs| lhs.name.cmp(&rhs.name).reverse());

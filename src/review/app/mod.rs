@@ -47,6 +47,7 @@ impl App {
 
 use std::{
     panic,
+    path::Path,
     sync::{Arc, Mutex},
 };
 
@@ -63,7 +64,7 @@ mod view;
 
 pub use help::Help;
 
-pub fn run(log_dir: &str, dev_mode: bool) -> Result<()> {
+pub fn run(log_dir: &Path, dev_mode: bool) -> Result<()> {
     // Set panic hook to capture panic details
     let panic: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
     set_panic_hook(Arc::clone(&panic));

@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::Path;
 
 use cursive::{
     Cursive, View,
@@ -29,7 +29,7 @@ pub struct LogsScreen {
 }
 
 impl LogsScreen {
-    pub fn new(log_dir: &str) -> Self {
+    pub fn new(log_dir: &Path) -> Self {
         let mut inner = LinearLayout::vertical()
             .child(Header::new().title("Gage - Logs"))
             .child(LogsView::new(log_dir).full_screen())
@@ -55,10 +55,9 @@ impl LogsScreen {
         }
     }
 
-    fn fmt_log_dir(log_dir: &str) -> StyledString {
+    fn fmt_log_dir(log_dir: &Path) -> StyledString {
         let cwd = std::env::current_dir().unwrap();
-        let log_dir = PathBuf::from_str(log_dir).unwrap();
-        let path = log_dir.strip_prefix(cwd).unwrap_or(log_dir.as_path());
+        let path = log_dir.strip_prefix(cwd).unwrap_or(log_dir);
         StyledString::concatenate([
             StyledString::styled("Log dir ", theme::Style::footer_caption()),
             StyledString::styled(path.to_str().unwrap(), theme::Style::footer_highlight()),

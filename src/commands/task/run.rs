@@ -20,7 +20,7 @@ use crate::{
     },
     py::{self, Docstring},
     result::Result,
-    util::{term_width, wrap, wrap_map},
+    util::{PathExt, term_width, wrap, wrap_map},
 };
 
 lazy_static! {
@@ -170,7 +170,8 @@ fn run_dialog(args: Args) -> Result<DialogResult> {
         }
 
         // Log dir
-        let log_dir = resolve_log_dir(args.log_dir.as_ref()).ok();
+        let log_dir = resolve_log_dir(args.log_dir.as_ref());
+        log::debug!("Using log_dir {log_dir:?} for run");
 
         // Start spinner
         let pb = cli::spinner();
@@ -184,7 +185,7 @@ fn run_dialog(args: Args) -> Result<DialogResult> {
             args.task_args,
             model,
             target.or_else(|| args.score.then_some("".into())),
-            log_dir,
+            Some(log_dir.expect_string()),
             args.tags,
         );
 

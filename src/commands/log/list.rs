@@ -6,9 +6,9 @@ use console::style;
 use pyo3::Python;
 
 use crate::{
-    commands::log::common::{cmd_resolve_log_dir, print_log_table},
+    commands::log::common::print_log_table,
     error::Error,
-    inspect::log::{LogFilter, list_logs_filter},
+    inspect::log::{LogFilter, list_logs_filter, resolve_log_dir},
     py,
     result::Result,
     util::term_height,
@@ -59,7 +59,7 @@ pub fn main(args: Args) -> Result<()> {
         return Err(Error::general("--all and --limit cannot both be used"));
     }
 
-    let log_dir = cmd_resolve_log_dir(args.log_dir.as_ref())?;
+    let log_dir = resolve_log_dir(args.log_dir.as_ref());
 
     py::init();
     Python::attach(|py| {
