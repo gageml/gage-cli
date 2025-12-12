@@ -237,7 +237,6 @@ fn select_model_dialog(model_arg: Option<&str>, yes_arg: bool) -> Result<Option<
     }
 
     // If env var specified, use it as default
-
     if let Ok(model) = env::var("GAGE_MODEL").or_else(|_| env::var("INSPECT_EVAL_MODEL")) {
         if yes_arg {
             cli::log::step(format!("Model:\n{}", style(&model).dim()))?;
