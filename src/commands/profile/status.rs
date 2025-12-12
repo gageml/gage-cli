@@ -1,6 +1,7 @@
 use std::{env, path::Path};
 
 use clap::Args as ArgsTrait;
+use itertools::Itertools;
 use tabled::{
     Table,
     builder::Builder,
@@ -69,7 +70,7 @@ pub fn profile_status(
                     last_non_env += 1;
                     empty = false;
                 }
-                for (name, val) in &profile.env {
+                for (name, val) in profile.env.iter().sorted() {
                     table.push_record([name, val]);
                     empty = false;
                 }
