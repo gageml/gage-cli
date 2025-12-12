@@ -167,10 +167,10 @@ impl Body {
             );
         }
 
-        // Transcript
-        let mut transcript_layout = PageLayout::new();
+        // Messages
+        let mut messages_layout = PageLayout::new();
         for msg in sample.messages.iter() {
-            transcript_layout.add_child(ToggleView::new(
+            messages_layout.add_child(ToggleView::new(
                 msg.role(),
                 Panel::new(ChatMessageView::new(msg, &sample.attachments))
                     .color(ColorStyle::back(BaseColor::Black.light()))
@@ -188,12 +188,10 @@ impl Body {
                     .pad_b(1),
             ))
         }
-        if transcript_layout.is_empty() {
-            transcript_layout.add_child(TextView::new(dim_ital("Empty")));
+        if messages_layout.is_empty() {
+            messages_layout.add_child(TextView::new(dim_ital("Empty")));
         }
-        self.add_child(
-            ToggleView::new("Transcript", transcript_layout.pad_lrtb(2, 0, 0, 0)).pad_x(1),
-        );
+        self.add_child(ToggleView::new("Messages", messages_layout.pad_lrtb(2, 0, 0, 0)).pad_x(1));
 
         // Set focus on active panel (TODO - use of take_focus here isn't working)
         let active_panel = (*self.active_panel.lock().unwrap()).clone();

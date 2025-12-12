@@ -6,6 +6,11 @@ Fix:
 
 - Bug in `gage profile use` when .env file didn't end with LF
 
+Other changes:
+
+- Rename "Transcript" section in Review simplified to "Messages" (align
+  with Inspect nomenclature)
+
 ## 0.2.1 (2025-12-10)
 
 Enhancements:
