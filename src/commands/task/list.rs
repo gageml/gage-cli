@@ -10,7 +10,7 @@ use tabled::{
     },
 };
 
-use crate::{commands::task::list_tasks_dialog, result::Result, theme::Colors, util::TableExt};
+use crate::{commands::task::list_tasks_dialog, py, result::Result, theme::Colors, util::TableExt};
 
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
@@ -20,6 +20,7 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
+    py::init();
     Python::attach(|py| {
         let tasks = list_tasks_dialog(py, args.path.as_deref())?;
         if tasks.is_empty() {

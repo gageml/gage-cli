@@ -15,6 +15,7 @@ use pyo3::Python;
 use crate::{
     cursive::{view::Padding, views::ScreensView},
     inspect::log::{EvalLog, read_log},
+    py,
     review::{
         App, AppScreen,
         components::{footer::Footer, header::Header},
@@ -74,6 +75,7 @@ impl LogScreen {
     }
 
     pub fn set_log_location(&mut self, location: &str) {
+        py::init();
         Python::attach(|py| match read_log(py, location) {
             Ok(log) => {
                 let log = Arc::new(log);

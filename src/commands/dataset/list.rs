@@ -10,7 +10,7 @@ use tabled::{
 };
 
 use crate::{
-    commands::dataset::list_datasets_dialog, result::Result, theme::Colors, util::TableExt,
+    commands::dataset::list_datasets_dialog, py, result::Result, theme::Colors, util::TableExt,
 };
 
 #[derive(ArgsTrait, Debug)]
@@ -21,6 +21,7 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
+    py::init();
     Python::attach(|py| {
         let datasets = list_datasets_dialog(py, args.path.as_deref())?;
         if datasets.is_empty() {

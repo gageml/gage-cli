@@ -6,7 +6,7 @@ use tabled::{
 };
 
 use crate::{
-    commands::task::select_task, inspect::task::get_task_doc, result::Result, theme::Colors,
+    commands::task::select_task, inspect::task::get_task_doc, py, result::Result, theme::Colors,
     util::term_width,
 };
 
@@ -21,6 +21,7 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
+    py::init();
     Python::attach(|py| {
         let task = select_task(py, Some(&args.task), args.path.as_deref())?;
 

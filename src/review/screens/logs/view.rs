@@ -15,6 +15,7 @@ use pyo3::Python;
 use crate::{
     cursive::views::ScreensView,
     inspect::log::{EvalLog, list_logs, read_log_header},
+    py,
     result::Result,
     review::{
         App, AppScreen,
@@ -311,6 +312,7 @@ impl LogsView {
     }
 
     fn items(log_dir: &str) -> Result<Vec<EvalLog>> {
+        py::init();
         Python::attach(|py| {
             Ok(list_logs(py, log_dir)?
                 .into_iter()

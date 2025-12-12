@@ -15,7 +15,7 @@ use crate::{
     config::Config,
     error::Error,
     inspect::log::resolve_log_dir,
-    py::py_call,
+    py::{self, py_call},
     result::Result,
     util::{TableExt, relpath_str},
 };
@@ -47,6 +47,8 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
 
     // Package versions
     table.push_record(["gage version", VERSION]);
+
+    py::init();
     Python::attach(|py| {
         // gage_inspect
         table.push_record(["gage_inspect version", &pkg_version(py, "gage_inspect")]);

@@ -16,6 +16,7 @@ use crate::{
     commands::log::common::cmd_resolve_log_dir,
     error::Error,
     inspect::log::{EvalLogInfo, list_logs, read_log_header},
+    py,
     result::Result,
     util::{TableExt, term_width, wrap},
 };
@@ -36,6 +37,7 @@ pub struct Args {
 }
 
 pub fn main(args: Args) -> Result<()> {
+    py::init();
     Python::attach(|py| {
         let log_dir = cmd_resolve_log_dir(args.log_dir.as_ref())?;
         let logs = list_logs(py, &log_dir)?;

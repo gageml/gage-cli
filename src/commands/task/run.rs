@@ -18,7 +18,7 @@ use crate::{
         scorer::Score,
         task::{TaskInfo, get_task_doc, run_task},
     },
-    py::Docstring,
+    py::{self, Docstring},
     result::Result,
     util::{term_width, wrap, wrap_map},
 };
@@ -87,7 +87,7 @@ pub fn main(args: Args) -> Result<()> {
 
 fn run_dialog(args: Args) -> Result<DialogResult> {
     cli::intro(style("Run task").bold())?;
-
+    py::init();
     Python::attach(|py| {
         let task = select_task_dialog(py, args.task.as_deref(), args.path.as_deref(), args.yes)?;
         let task_doc = get_task_doc(py, &task)?;

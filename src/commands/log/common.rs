@@ -24,6 +24,7 @@ use crate::{
     dialog::DialogResult,
     error::Error,
     inspect::log::{EvalLogInfo, LogFilter, list_logs_filter, read_log_header, resolve_log_dir},
+    py,
     result::Result,
     theme::Colors,
     util::{TableExt, fit_path_name, term_width, wrap},
@@ -103,6 +104,7 @@ impl LogOpDialog {
     {
         cli::intro(style(&self.title).bold())?;
 
+        py::init();
         Python::attach(|py| {
             // Use spinner when reading logs
             let pb = cli::spinner();

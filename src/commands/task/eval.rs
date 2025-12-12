@@ -11,6 +11,7 @@ use crate::{
     dialog::{DialogResult, handle_dialog_result},
     error::Error,
     inspect::{log::resolve_log_dir, task::eval_tasks},
+    py,
     result::Result,
 };
 
@@ -76,6 +77,7 @@ pub fn main(args: Args) -> Result<()> {
 fn eval_dialog(args: Args) -> Result<DialogResult> {
     cli::intro(style("Evaluate tasks").bold())?;
 
+    py::init();
     Python::attach(|py| {
         let tasks = select_tasks_dialog(py, args.path.as_deref(), &args.tasks, args.yes)?;
 

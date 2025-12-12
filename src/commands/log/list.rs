@@ -9,6 +9,7 @@ use crate::{
     commands::log::common::{cmd_resolve_log_dir, print_log_table},
     error::Error,
     inspect::log::{LogFilter, list_logs_filter},
+    py,
     result::Result,
     util::term_height,
 };
@@ -60,6 +61,7 @@ pub fn main(args: Args) -> Result<()> {
 
     let log_dir = cmd_resolve_log_dir(args.log_dir.as_ref())?;
 
+    py::init();
     Python::attach(|py| {
         let pb = cli::spinner();
         pb.start("Reading logs");
