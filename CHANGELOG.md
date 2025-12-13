@@ -1,10 +1,11 @@
 # Changes
 
-## 0.2.2 (release pending)
+## 0.2.2 (not released)
 
 Fix:
 
-- Bug in `gage profile use` when .env file didn't end with LF
+- Apply env vars for Gage activated profile
+- Handle missing LF chars in `.env` when activating/using profile
 
 Other changes:
 
