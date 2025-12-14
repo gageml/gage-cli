@@ -7,8 +7,10 @@ use pyo3::Python;
 
 use crate::{
     commands::log::common::print_log_table,
+    config::Config,
     error::Error,
     inspect::log::{LogFilter, list_logs_filter, resolve_log_dir},
+    profile::apply_profile,
     py,
     result::Result,
     util::term_height,
@@ -47,7 +49,7 @@ impl From<&Args> for LogFilter {
     }
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
     // Check incompatible options
     if args.more > 0 && args.limit.is_some() {
         return Err(Error::general("--more and --limit cannot both be used"));
@@ -59,6 +61,7 @@ pub fn main(args: Args) -> Result<()> {
         return Err(Error::general("--all and --limit cannot both be used"));
     }
 
+    apply_profile(config)?;
     let log_dir = resolve_log_dir(args.log_dir.as_ref());
 
     py::init();

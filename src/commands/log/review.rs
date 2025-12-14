@@ -2,7 +2,9 @@ use std::path::PathBuf;
 
 use clap::Args as ArgsTrait;
 
-use crate::{inspect::log::resolve_log_dir, result::Result, review};
+use crate::{
+    config::Config, inspect::log::resolve_log_dir, profile::apply_profile, result::Result, review,
+};
 
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
@@ -14,6 +16,7 @@ pub struct Args {
     dev: bool,
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
+    apply_profile(config)?;
     review::run(&resolve_log_dir(args.log_dir.as_ref()), args.dev)
 }

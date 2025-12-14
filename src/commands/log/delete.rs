@@ -3,10 +3,12 @@ use std::path::PathBuf;
 
 use crate::{
     commands::log::common::{LogOpDialog, LogOpSuccessMap, LogSelect},
+    config::Config,
     dialog::handle_dialog_result,
     error::Error,
     inspect::log::resolve_log_dir,
     plural,
+    profile::apply_profile,
     result::Result,
 };
 
@@ -36,9 +38,15 @@ pub struct Args {
     permanent: bool,
 }
 
-pub fn main(args: Args) -> Result<()> {
-    validate_args(&args)?;
+pub fn main(args: Args, config: &Config) -> Result<()> {
+    if args.specs.is_empty() && !args.all {
+        return Err(Error::general(
+            "--all flag must be provided if there is no target",
+        ));
+    }
     let log_specs = LogSelect::parse_specs(&args.specs)?;
+    apply_profile(config)?;
+
     handle_dialog_result(
         LogOpDialog::new("Delete logs")
             .log_dir(resolve_log_dir(args.log_dir.as_ref()))
@@ -63,13 +71,4 @@ pub fn main(args: Args) -> Result<()> {
             .run(|log| log.delete(args.permanent))
             .on_success(|count| format!("{count} {} deleted", plural!("log", count))),
     )
-}
-
-fn validate_args(args: &Args) -> Result<()> {
-    if args.specs.is_empty() && !args.all {
-        return Err(Error::general(
-            "--all flag must be provided if there is no target",
-        ));
-    }
-    Ok(())
 }

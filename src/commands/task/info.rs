@@ -6,8 +6,8 @@ use tabled::{
 };
 
 use crate::{
-    commands::task::select_task, inspect::task::get_task_doc, py, result::Result, theme::Colors,
-    util::term_width,
+    commands::task::select_task, config::Config, inspect::task::get_task_doc,
+    profile::apply_profile, py, result::Result, theme::Colors, util::term_width,
 };
 
 #[derive(ArgsTrait, Debug)]
@@ -20,7 +20,8 @@ pub struct Args {
     path: Option<String>,
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
+    apply_profile(config)?;
     py::init();
     Python::attach(|py| {
         let task = select_task(py, Some(&args.task), args.path.as_deref())?;

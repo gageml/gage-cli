@@ -15,6 +15,7 @@ use crate::{
     config::Config,
     error::Error,
     inspect::log::resolve_log_dir,
+    profile::apply_profile,
     py::{self, py_call},
     result::Result,
     util::{TableExt, relpath_str},
@@ -38,6 +39,8 @@ pub struct Args {
 }
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
+    apply_profile(config)?;
+
     // Special row types - used for styling
     let mut errors = Vec::new();
     let mut not_found = Vec::new();

@@ -7,6 +7,10 @@ use crate::{
     secrets::Secrets,
 };
 
+pub fn apply_profile(config: &Config) -> Result<()> {
+    apply_profile_impl(config, false)
+}
+
 pub fn apply_profile_with_secrets(config: &Config) -> Result<()> {
     apply_profile_impl(config, true)
 }

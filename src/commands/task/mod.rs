@@ -7,6 +7,7 @@ use pyo3::Python;
 
 use crate::{
     commands::endpoint,
+    config::Config,
     error::Error,
     inspect::{self, task::TaskInfo},
     result::Result,
@@ -43,13 +44,13 @@ pub enum Cmd {
     Serve(endpoint::start::Args),
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
     match args.cmd {
-        Cmd::Eval(args) => eval::main(args),
-        Cmd::Info(args) => info::main(args),
-        Cmd::List(args) => list::main(args),
-        Cmd::Run(args) => run::main(args),
         Cmd::Serve(args) => endpoint::start::main(args),
+        Cmd::Eval(args) => eval::main(args, config),
+        Cmd::Info(args) => info::main(args, config),
+        Cmd::List(args) => list::main(args, config),
+        Cmd::Run(args) => run::main(args, config),
     }
 }
 

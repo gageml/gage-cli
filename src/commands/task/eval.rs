@@ -8,9 +8,11 @@ use pyo3::Python;
 
 use crate::{
     commands::task::{list_value, select_model_dialog, select_tasks_dialog},
+    config::Config,
     dialog::{DialogResult, handle_dialog_result},
     error::Error,
     inspect::{log::resolve_log_dir, task::eval_tasks},
+    profile::apply_profile_with_secrets,
     py,
     result::Result,
     util::PathExt,
@@ -67,11 +69,11 @@ pub struct Args {
     log_dir: Option<PathBuf>,
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
     if args.limit.is_some() && !args.samples.is_empty() {
         return Err(Error::general("--limit cannot be used with samples"));
     }
-
+    apply_profile_with_secrets(config)?;
     handle_dialog_result(eval_dialog(args))
 }
 

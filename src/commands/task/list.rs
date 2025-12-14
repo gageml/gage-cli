@@ -10,7 +10,10 @@ use tabled::{
     },
 };
 
-use crate::{commands::task::list_tasks_dialog, py, result::Result, theme::Colors, util::TableExt};
+use crate::{
+    commands::task::list_tasks_dialog, config::Config, profile::apply_profile, py, result::Result,
+    theme::Colors, util::TableExt,
+};
 
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
@@ -19,7 +22,8 @@ pub struct Args {
     path: Option<String>,
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
+    apply_profile(config)?;
     py::init();
     Python::attach(|py| {
         let tasks = list_tasks_dialog(py, args.path.as_deref())?;

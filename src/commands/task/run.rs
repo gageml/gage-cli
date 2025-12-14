@@ -10,6 +10,7 @@ use regex::Regex;
 
 use crate::{
     commands::task::{select_model_dialog, select_task_dialog},
+    config::Config,
     dialog::{DialogInfo, DialogResult, handle_dialog_result},
     error::Error,
     inspect::{
@@ -18,6 +19,7 @@ use crate::{
         scorer::Score,
         task::{TaskInfo, get_task_doc, run_task},
     },
+    profile::apply_profile_with_secrets,
     py::{self, Docstring},
     result::Result,
     util::{PathExt, term_width, wrap, wrap_map},
@@ -78,10 +80,11 @@ pub struct Args {
     yes: bool,
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
     if args.yes && args.input.is_none() {
         return Err(Error::general("--input required with --yes"));
     }
+    apply_profile_with_secrets(config)?;
     handle_dialog_result(run_dialog(args))
 }
 

@@ -23,7 +23,6 @@ use commands as cmd;
 use crate::{
     config::Config,
     error::Error,
-    profile::apply_profile_with_secrets,
     result::{Exit, Result},
 };
 
@@ -92,16 +91,16 @@ fn main() -> Exit {
     // Dispatch command
     handle_result(match args.cmd {
         Cmd::Dataset(args) => cmd::dataset::main(args),
-        Cmd::Eval(args) => cmd::task::eval::main(args),
         Cmd::Init => cmd::init::main(),
-        Cmd::List(args) => cmd::log::list::main(args),
-        Cmd::Log(args) => cmd::log::main(args),
+        Cmd::Eval(args) => cmd::task::eval::main(args, &config),
+        Cmd::List(args) => cmd::log::list::main(args, &config),
+        Cmd::Log(args) => cmd::log::main(args, &config),
         Cmd::Profile(args) => cmd::profile::main(args, &config),
-        Cmd::Review(args) => cmd::log::review::main(args),
-        Cmd::Delete(args) => cmd::log::delete::main(args),
+        Cmd::Review(args) => cmd::log::review::main(args, &config),
+        Cmd::Delete(args) => cmd::log::delete::main(args, &config),
         Cmd::Status(args) => cmd::status::main(args, &config),
-        Cmd::Run(args) => cmd::task::run::main(args),
-        Cmd::Task(args) => cmd::task::main(args),
+        Cmd::Run(args) => cmd::task::run::main(args, &config),
+        Cmd::Task(args) => cmd::task::main(args, &config),
     })
 }
 
@@ -109,7 +108,6 @@ fn init_config(args: &Args) -> Result<Config> {
     let config = Config::try_from_arg(args.config.as_ref())
         .map_err(not_found_msg)?
         .unwrap_or_default();
-    apply_profile_with_secrets(&config)?;
     Ok(config)
 }
 

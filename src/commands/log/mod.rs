@@ -1,6 +1,6 @@
 use clap::{Args as ArgsTrait, Subcommand};
 
-use crate::result::Result;
+use crate::{config::Config, result::Result};
 
 mod common;
 pub mod delete;
@@ -37,13 +37,13 @@ pub enum Cmd {
     Restore(restore::Args),
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(args: Args, config: &Config) -> Result<()> {
     match args.cmd {
-        Cmd::List(args) => list::main(args),
-        Cmd::Review(args) => review::main(args),
-        Cmd::Info(args) => info::main(args),
-        Cmd::Delete(args) => delete::main(args),
-        Cmd::Purge(args) => purge::main(args),
-        Cmd::Restore(args) => restore::main(args),
+        Cmd::List(args) => list::main(args, config),
+        Cmd::Review(args) => review::main(args, config),
+        Cmd::Info(args) => info::main(args, config),
+        Cmd::Delete(args) => delete::main(args, config),
+        Cmd::Purge(args) => purge::main(args, config),
+        Cmd::Restore(args) => restore::main(args, config),
     }
 }
