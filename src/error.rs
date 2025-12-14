@@ -51,6 +51,18 @@ impl From<std::io::Error> for Error {
     }
 }
 
+impl From<rawzip::Error> for Error {
+    fn from(value: rawzip::Error) -> Self {
+        Self::IO(std::io::Error::other(value))
+    }
+}
+
+impl From<serde_json::Error> for Error {
+    fn from(value: serde_json::Error) -> Self {
+        Self::IO(std::io::Error::other(value))
+    }
+}
+
 impl Error {
     pub fn general(msg: impl Display) -> Self {
         Self::Custom(msg.to_string())

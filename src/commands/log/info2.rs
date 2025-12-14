@@ -8,7 +8,7 @@ use crate::{
     config::Config,
     error::Error,
     inspect::log::resolve_log_dir,
-    inspect2::log::list_logs_filter,
+    inspect2::log::{LogHeader, list_logs_filter},
     profile::apply_profile,
     result::Result,
     util::{TableExt, term_width, wrap},
@@ -80,29 +80,31 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
         &log.mtime.as_ref().map(|t| t.to_human()).unwrap_or_default(),
     ]);
 
-    // table.push_record(["Status", &header.status.to_string()]);
-    // if let Some(error) = header.error.as_ref() {
-    //     table.push_record(["Error", &error.message]);
-    // }
-    // table.push_record([
-    //     "Dataset",
-    //     header.eval.dataset.name.as_deref().unwrap_or_default(),
-    // ]);
-    // table.push_record([
-    //     "Samples",
-    //     &header
-    //         .eval
-    //         .dataset
-    //         .evaluated_count()
-    //         .map(|n| n.to_string())
-    //         .unwrap_or_default(),
-    // ]);
-    // table.push_record(["Model", &header.eval.model]);
-    // if args.verbose {
-    //     table.push_record(["File", &fmt_log_filename(log)]);
-    //     table.push_record(["Eval Id", &header.eval.eval_id]);
-    //     table.push_record(["Run Id", &header.eval.run_id]);
-    // }
+    // Header attrs
+    match LogHeader::try_from(log) {
+        Ok(header) => {
+            // Status
+            table.push_record(["Status", &header.status.to_string()]);
+
+            // Dataset
+            table.push_record([
+                "Dataset",
+                header.eval.dataset.name.as_deref().unwrap_or_default(),
+            ]);
+
+            // Samples
+            table.push_record(["Samples", &{
+                let samples = &header.results.total_samples;
+                let completed = &header.results.completed_samples;
+                if samples == completed {
+                    format!("{samples}")
+                } else {
+                    format!("{samples} ({completed} completed)")
+                }
+            }]);
+        }
+        Err(err) => table.push_record(["Error", &err.to_string()]),
+    }
 
     println!(
         "{}",

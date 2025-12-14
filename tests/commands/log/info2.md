@@ -25,6 +25,9 @@ Show log info.
     ├─────────┼────────────────────────┤
     │ Task    │ test                   │
     │ Created │ now                    │
+    │ Status  │ success                │
+    │ Dataset │                        │
+    │ Samples │ 1                      │
     ╰─────────┴────────────────────────╯
 
     >>> assert log_id_ == log_id
