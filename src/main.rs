@@ -9,6 +9,7 @@ mod dialog;
 mod env;
 mod error;
 mod inspect;
+mod inspect2;
 mod logger;
 mod profile;
 mod py;
