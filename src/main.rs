@@ -91,7 +91,6 @@ fn main() -> Exit {
     // Dispatch command
     handle_result(match args.cmd {
         Cmd::Dataset(args) => cmd::dataset::main(args),
-        Cmd::Init => cmd::init::main(),
         Cmd::Eval(args) => cmd::task::eval::main(args, &config),
         Cmd::List(args) => cmd::log::list::main(args, &config),
         Cmd::Log(args) => cmd::log::main(args, &config),

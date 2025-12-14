@@ -6,7 +6,6 @@ use console::style;
 use pyo3::Python;
 
 use crate::{
-    commands::endpoint,
     config::Config,
     error::Error,
     inspect::{self, task::TaskInfo},
@@ -38,15 +37,10 @@ pub enum Cmd {
 
     /// Run a task
     Run(run::Args),
-
-    /// Start a task endpoint
-    #[command(hide = true)] // TODO
-    Serve(endpoint::start::Args),
 }
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
     match args.cmd {
-        Cmd::Serve(args) => endpoint::start::main(args),
         Cmd::Eval(args) => eval::main(args, config),
         Cmd::Info(args) => info::main(args, config),
         Cmd::List(args) => list::main(args, config),
