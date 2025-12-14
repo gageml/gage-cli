@@ -50,16 +50,8 @@ enum Cmd {
     /// Delete one or more logs
     Delete(cmd::log::delete::Args),
 
-    /// Manage task endpoints
-    #[command(hide = true)] // TODO
-    Endpoint(cmd::endpoint::Args),
-
     /// Run an evaluation
     Eval(cmd::task::eval::Args),
-
-    /// Initialize a project
-    #[command(hide = true)] // TODO
-    Init,
 
     /// List eval logs
     List(cmd::log::list::Args),
@@ -78,10 +70,6 @@ enum Cmd {
 
     /// Show project status
     Status(cmd::status::Args),
-
-    /// Start a task endpoint
-    #[command(hide = true)]
-    Serve(cmd::endpoint::start::Args),
 
     /// Manage tasks
     Task(cmd::task::Args),
@@ -104,7 +92,6 @@ fn main() -> Exit {
     // Dispatch command
     handle_result(match args.cmd {
         Cmd::Dataset(args) => cmd::dataset::main(args),
-        Cmd::Endpoint(args) => cmd::endpoint::main(args),
         Cmd::Eval(args) => cmd::task::eval::main(args),
         Cmd::Init => cmd::init::main(),
         Cmd::List(args) => cmd::log::list::main(args),
@@ -114,7 +101,6 @@ fn main() -> Exit {
         Cmd::Delete(args) => cmd::log::delete::main(args),
         Cmd::Status(args) => cmd::status::main(args, &config),
         Cmd::Run(args) => cmd::task::run::main(args),
-        Cmd::Serve(args) => cmd::endpoint::start::main(args),
         Cmd::Task(args) => cmd::task::main(args),
     })
 }

@@ -8,7 +8,6 @@ use crate::{
     util::split_path_or_env,
 };
 
-mod create;
 mod list;
 
 #[derive(ArgsTrait, Debug)]
@@ -19,17 +18,12 @@ pub struct Args {
 
 #[derive(Subcommand, Debug)]
 pub enum Cmd {
-    /// Create a new dataset
-    #[command(hide = true)] // TODO
-    Create(create::Args),
-
     /// List datasets
     List(list::Args),
 }
 
 pub fn main(args: Args) -> Result<()> {
     match args.cmd {
-        Cmd::Create(args) => create::main(args),
         Cmd::List(args) => list::main(args),
     }
 }
