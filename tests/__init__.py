@@ -214,6 +214,10 @@ def cat(*parts: str):
             print(s)
 
 
+def sleep(seconds: float):
+    time.sleep(seconds)
+
+
 # Add build target dir to path unless running in CI
 if not os.getenv("CI"):
     _apply_project_paths()
@@ -229,6 +233,7 @@ __all__ = [
     "os",
     "option_table",
     "run",
+    "sleep",
     "touch",
     "write_file",
 ]

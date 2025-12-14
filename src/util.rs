@@ -5,11 +5,13 @@ use std::{
     path::{MAIN_SEPARATOR, Path, PathBuf},
 };
 
+use chrono::{DateTime, FixedOffset, Local, ParseResult, Utc};
+use chrono_humanize::HumanTime;
 use tabled::{
     Table,
     settings::{
-        Style, Width,
-        object::{Columns, Rows},
+        Color, Style, Width,
+        object::{Columns, Object, Rows},
         peaker::Priority,
         style::HorizontalLine,
         themes::Colorization,
@@ -95,6 +97,7 @@ pub trait TableExt {
     fn with_col_labels(&mut self) -> &mut Self;
     fn with_rounded(&mut self) -> &mut Self;
     fn with_rounded_no_header(&mut self) -> &mut Self;
+    fn with_cell_color(&mut self, col: usize, row: usize, color: Color) -> &mut Self;
 }
 
 impl TableExt for Table {
@@ -127,6 +130,13 @@ impl TableExt for Table {
                 .line_top(HorizontalLine::full('─', '┬', '╭', '╮'))
                 .line_bottom(HorizontalLine::full('─', '┴', '╰', '╯')),
         )
+    }
+
+    fn with_cell_color(&mut self, col: usize, row: usize, color: Color) -> &mut Self {
+        self.with(Colorization::exact(
+            [color],
+            Columns::one(col).intersect(Rows::one(row)),
+        ))
     }
 }
 
@@ -202,12 +212,44 @@ impl PathExt for Path {
     }
 }
 
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+pub struct EpochMillis(DateTime<Utc>);
+
+impl EpochMillis {
+    pub fn from_epoch_millis(ms: i64) -> Self {
+        Self(DateTime::<Utc>::from_timestamp_millis(ms).unwrap())
+    }
+
+    pub fn from_python_iso(iso: &str) -> ParseResult<Self> {
+        Ok(Self(
+            DateTime::<FixedOffset>::parse_from_rfc3339(iso)?.to_utc(),
+        ))
+    }
+
+    pub fn to_human_since(&self, datetime: &DateTime<Utc>) -> String {
+        HumanTime::from(self.0 - datetime).to_string()
+    }
+
+    pub fn to_human(&self) -> String {
+        self.to_human_since(&Utc::now())
+    }
+
+    pub fn to_iso_8601_local(&self) -> String {
+        self.0.with_timezone(Local::now().offset()).to_rfc3339()
+    }
+
+    #[allow(dead_code)] // Used in py tests
+    pub fn as_utc_datetime(&self) -> &DateTime<Utc> {
+        &self.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::util::fit_path_name;
-
     #[test]
     fn test_fit_dataset_name() {
+        use crate::util::fit_path_name;
+
         assert_eq!(fit_path_name("abc", 3), "abc");
         assert_eq!(fit_path_name("abc", 2), "a…");
         assert_eq!(fit_path_name("abc/def", 1), "…");
@@ -218,5 +260,35 @@ mod tests {
         assert_eq!(fit_path_name("abc/def", 6), "a…/def");
         assert_eq!(fit_path_name("abc/def", 7), "abc/def");
         assert_eq!(fit_path_name("abc/def", 8), "abc/def");
+    }
+
+    #[test]
+    fn test_epoch_millis_from_python_iso() {
+        use crate::util::EpochMillis;
+
+        assert_eq!(
+            format!(
+                "{:?}",
+                EpochMillis::from_python_iso("2025-09-30T12:34:56-05:00")
+            ),
+            "Ok(EpochMillis(2025-09-30T17:34:56Z))"
+        );
+
+        assert_eq!(
+            format!(
+                "{:?}",
+                EpochMillis::from_python_iso("2025-12-12T23:26:11+00:00")
+            ),
+            "Ok(EpochMillis(2025-12-12T23:26:11Z))"
+        );
+
+        // Invalid
+        assert_eq!(
+            format!(
+                "{:?}",
+                EpochMillis::from_python_iso("2025-12-12T23-26-11+00-00")
+            ),
+            "Err(ParseError(Invalid))"
+        );
     }
 }

@@ -5,6 +5,7 @@ use crate::{config::Config, result::Result};
 mod common;
 pub mod delete;
 mod info;
+mod info2;
 pub mod list;
 mod purge;
 mod restore;
@@ -27,6 +28,10 @@ pub enum Cmd {
     /// Show log info
     Info(info::Args),
 
+    /// Show log info
+    #[command(hide = true)]
+    Info2(info2::Args),
+
     /// Delete logs
     Delete(delete::Args),
 
@@ -42,6 +47,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
         Cmd::List(args) => list::main(args, config),
         Cmd::Review(args) => review::main(args, config),
         Cmd::Info(args) => info::main(args, config),
+        Cmd::Info2(args) => info2::main(args, config),
         Cmd::Delete(args) => delete::main(args, config),
         Cmd::Purge(args) => purge::main(args, config),
         Cmd::Restore(args) => restore::main(args, config),
