@@ -10,7 +10,7 @@ use chrono_humanize::HumanTime;
 use tabled::{
     Table,
     settings::{
-        Color, Style, Width,
+        Color, Remove, Style, Width,
         object::{Columns, Object, Rows},
         peaker::Priority,
         style::HorizontalLine,
@@ -98,6 +98,8 @@ pub trait TableExt {
     fn with_rounded(&mut self) -> &mut Self;
     fn with_rounded_no_header(&mut self) -> &mut Self;
     fn with_cell_color(&mut self, col: usize, row: usize, color: Color) -> &mut Self;
+    fn with_col_color(&mut self, col: usize, color: Color) -> &mut Self;
+    fn remove_col(&mut self, col: usize) -> &mut Self;
 }
 
 impl TableExt for Table {
@@ -137,6 +139,14 @@ impl TableExt for Table {
             [color],
             Columns::one(col).intersect(Rows::one(row)),
         ))
+    }
+
+    fn with_col_color(&mut self, col: usize, color: Color) -> &mut Self {
+        self.with(Colorization::exact([color], Columns::one(col)))
+    }
+
+    fn remove_col(&mut self, col: usize) -> &mut Self {
+        self.with(Remove::column(Columns::one(col)))
     }
 }
 
@@ -212,7 +222,7 @@ impl PathExt for Path {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
+#[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
 pub struct EpochMillis(DateTime<Utc>);
 
 impl EpochMillis {

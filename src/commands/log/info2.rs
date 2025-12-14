@@ -75,10 +75,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     // Task
     table.push_record(["Task", &log.task]);
     let task_row = table.count_records() - 1;
-    table.push_record([
-        "Created",
-        &log.mtime.as_ref().map(|t| t.to_human()).unwrap_or_default(),
-    ]);
+    table.push_record(["Started", &log.mtime.to_human()]);
 
     // Header attrs
     match LogHeader::try_from(log) {

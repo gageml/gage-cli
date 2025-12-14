@@ -12,10 +12,19 @@ use crate::{error::Error, result::Result, util::EpochMillis};
 pub struct LogInfo {
     #[allow(dead_code)]
     pub name: String,
-    pub mtime: Option<EpochMillis>,
+    pub mtime: EpochMillis,
     pub task: String,
     pub log_id: String,
     pub is_deleted: bool,
+}
+
+impl LogInfo {
+    pub fn short_log_id(&self) -> &str {
+        self.log_id
+            .split_at_checked(6)
+            .map(|(short_id, _)| short_id)
+            .unwrap_or(&self.log_id)
+    }
 }
 
 #[derive(Deserialize)]
@@ -47,7 +56,51 @@ impl std::fmt::Display for EvalStatus {
 
 #[derive(Deserialize)]
 pub struct EvalSpec {
+    // pub eval_set_id: Option<String>,
+    // pub eval_id: String,
+    // pub run_id: String,
+    // pub created: EpochMillis,
+    // pub task: String,
+    // pub task_id: String,
+    // pub task_version: TaskVersion,
+    // pub task_file: Option<String>,
+    // pub task_display_name: Option<String>,
+    // pub task_registry_name: Option<String>,
+    // pub task_attribs: Attributes,
+    // pub task_args: Args,
+    // pub task_args_passed: Args,
+    // pub solver: Option<String>,
+    // pub solver_args: Option<Args>,
+    pub tags: Option<Vec<String>>,
     pub dataset: EvalDataset,
+    // sandbox: SandboxEnvironmentSpec | None = Field(default=None)
+    pub model: String,
+    // model_generate_config: GenerateConfig = Field(default_factory=GenerateConfig)
+    // pub model_base_url: Option<String>,
+    // pub model_args: Args,
+    // model_roles: dict[str, ModelConfig] | None = Field(default=None)
+    // config: EvalConfig
+    // pub revision: Option<EvalRevision>,
+    // pub packages: HashMap<String, String>,
+    // pub metadata: Option<Metadata>,
+    // pub scorers: Option<Vec<EvalScorer>>,
+    // pub metrics: Option<Metrics>,
+    // model_config = ConfigDict(protected_namespaces=())
+}
+
+impl EvalSpec {
+    // pub fn task_description(&self) -> Option<String> {
+    //     self.task_attribs
+    //         .get("description")
+    //         .map(|val| val.to_string())
+    // }
+
+    pub fn run_type(&self) -> Option<&str> {
+        self.tags
+            .as_ref()?
+            .iter()
+            .find_map(|v| v.strip_prefix("type:"))
+    }
 }
 
 #[derive(Deserialize)]
@@ -128,8 +181,9 @@ where
         .filter(filter)
         .collect::<Vec<_>>();
 
-    // Sort by mtime descending (latest logs first)
-    logs.sort_by(|lhs, rhs| lhs.mtime.cmp(&rhs.mtime).reverse());
+    // Sort using name, which contains a leading create timestamp,
+    // showing most recently created logs first
+    logs.sort_by(|lhs, rhs| lhs.name.cmp(&rhs.name).reverse());
 
     Ok(logs)
 }
@@ -147,7 +201,13 @@ impl TryFrom<DirEntry> for LogInfo {
         } = split_log_file_name(file_name.to_str().unwrap())
             .ok_or_else(|| Error::general(format!("not a log: {}", path.to_string_lossy())))?;
         let name = format!("file://{}", path.to_string_lossy());
-        let mtime = EpochMillis::from_file_name_timestamp(timestamp);
+        let mtime = match EpochMillis::try_from_file_name_timestamp(timestamp) {
+            Ok(v) => v,
+            Err(e) => {
+                log::debug!("Error getting mtime for log {path:?}: {e}");
+                EpochMillis::default()
+            }
+        };
         let is_deleted = name.ends_with(".deleted");
         Ok(Self {
             name,
@@ -178,10 +238,43 @@ impl EpochMillis {
     /// Python ISO format:
     ///
     /// 2025-12-12T23:26:11+00:00
-    fn from_file_name_timestamp(timestamp: &str) -> Option<Self> {
-        let (date, rest) = timestamp.split_at_checked(10)?;
-        let time = rest.replace("-", ":");
-        Self::from_python_iso(&format!("{date}{time}")).ok()
+    fn try_from_file_name_timestamp(timestamp: &str) -> Result<Self> {
+        // Split at pos 10 for date and rest
+        let (date, rest) = timestamp
+            .split_at_checked(10)
+            .ok_or_else(|| Error::general("missing date"))?;
+
+        // Expect time part to start with "T"
+        let (delim, rest) = rest
+            .split_at_checked(1)
+            .ok_or_else(|| Error::general("missing time delimiter at pos 11"))?;
+        if delim != "T" {
+            return Err(Error::general("unexpected char at pos 11, expected T"));
+        }
+
+        // Split rest at pos 8 for time and rest
+        let (time, rest) = rest
+            .split_at_checked(8)
+            .ok_or_else(|| Error::general("missing time"))?;
+
+        // Split rest at pos 1 for timezone sign direction and value
+        let (tz_sign, tz_offset) = rest
+            .split_at_checked(1)
+            .ok_or_else(|| Error::general("missing tz"))?;
+        if tz_sign != "-" && tz_sign != "+" {
+            return Err(Error::general("unexpected tz sign at pos 20"));
+        }
+
+        // Reconstruct to ISO by relacing "-" in time and tz offset with ":"
+        let iso_fmt = format!(
+            "{}T{}{}{}",
+            date,
+            time.replace("-", ":"),
+            tz_sign,
+            tz_offset.replace("-", ":")
+        );
+        Self::from_python_iso(&iso_fmt)
+            .map_err(|e| Error::general(format!("invalid ISO date '{iso_fmt}': {e}")))
     }
 }
 
@@ -279,19 +372,78 @@ mod tests {
 
         // Standard case
         assert_eq!(
-            EpochMillis::from_file_name_timestamp("2025-12-12T23-26-11+00-00").unwrap(),
+            EpochMillis::try_from_file_name_timestamp("2025-12-12T23-26-11+00-00").unwrap(),
             EpochMillis::from_python_iso("2025-12-12T23:26:11+00:00").unwrap()
         );
 
         // Also parses already-correct ISO formats
         assert_eq!(
-            EpochMillis::from_file_name_timestamp("2025-12-12T23:26:11+00-00").unwrap(),
-            EpochMillis::from_python_iso("2025-12-12T23:26:11+00:00").unwrap()
+            EpochMillis::try_from_file_name_timestamp("2025-12-12T23:26:11-00-00").unwrap(),
+            EpochMillis::from_python_iso("2025-12-12T23:26:11-00:00").unwrap()
         );
 
-        // Any other format returns None
-        assert!(EpochMillis::from_file_name_timestamp("").is_none());
-        assert!(EpochMillis::from_file_name_timestamp("foo").is_none());
-        assert!(EpochMillis::from_file_name_timestamp("2025-12-12T23_26_11+00-00").is_none());
+        // Missing date (too short)
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("")
+                .unwrap_err()
+                .to_string(),
+            "missing date"
+        );
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("123456789")
+                .unwrap_err()
+                .to_string(),
+            "missing date"
+        );
+
+        // Bad time delimiter
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("1234567890")
+                .unwrap_err()
+                .to_string(),
+            "missing time delimiter at pos 11"
+        );
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("12345678901")
+                .unwrap_err()
+                .to_string(),
+            "unexpected char at pos 11, expected T"
+        );
+
+        // Missing time
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("1234567890T")
+                .unwrap_err()
+                .to_string(),
+            "missing time"
+        );
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("1234567890T1234567")
+                .unwrap_err()
+                .to_string(),
+            "missing time"
+        );
+
+        // Missing or invalid timezone
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("1234567890T12345678")
+                .unwrap_err()
+                .to_string(),
+            "missing tz"
+        );
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("1234567890T123456789")
+                .unwrap_err()
+                .to_string(),
+            "unexpected tz sign at pos 20"
+        );
+
+        // Remaining errors are specific to ISO parse
+        assert_eq!(
+            EpochMillis::try_from_file_name_timestamp("1234567890T12345678+")
+                .unwrap_err()
+                .to_string(),
+            "invalid ISO date '1234567890T12345678+': input contains invalid characters"
+        );
     }
 }

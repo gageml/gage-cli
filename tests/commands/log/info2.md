@@ -24,7 +24,7 @@ Show log info.
     │ Log     │ {log_id_}              │
     ├─────────┼────────────────────────┤
     │ Task    │ test                   │
-    │ Created │ now                    │
+    │ Started │ now                    │
     │ Status  │ success                │
     │ Dataset │                        │
     │ Samples │ 1                      │
