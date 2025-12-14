@@ -4,8 +4,6 @@ use std::{
     path::PathBuf,
 };
 
-use chrono::{DateTime, FixedOffset, Local, ParseResult, Utc};
-use chrono_humanize::HumanTime;
 use pyo3::{
     Borrowed, Bound, FromPyObject, PyAny, PyErr, PyResult, Python,
     call::PyCallArgs,
@@ -13,6 +11,8 @@ use pyo3::{
     ffi,
     types::{PyAnyMethods, PyModule},
 };
+
+use crate::util::EpochMillis;
 
 #[derive(Debug)]
 pub enum Any {
@@ -45,33 +45,6 @@ impl Display for Any {
             Self::Float(n) => n.fmt(f),
             Self::Other(o) => o.fmt(f),
         }
-    }
-}
-
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Debug)]
-pub struct EpochMillis(DateTime<Utc>);
-
-impl EpochMillis {
-    pub fn from_epoch_millis(ms: i64) -> Self {
-        Self(DateTime::<Utc>::from_timestamp_millis(ms).unwrap())
-    }
-
-    pub fn from_python_iso(iso: &str) -> ParseResult<Self> {
-        Ok(Self(
-            DateTime::<FixedOffset>::parse_from_rfc3339(iso)?.to_utc(),
-        ))
-    }
-
-    pub fn to_human_since(&self, datetime: &DateTime<Utc>) -> String {
-        HumanTime::from(self.0 - datetime).to_string()
-    }
-
-    pub fn to_human(&self) -> String {
-        self.to_human_since(&Utc::now())
-    }
-
-    pub fn to_iso_8601_local(&self) -> String {
-        self.0.with_timezone(Local::now().offset()).to_rfc3339()
     }
 }
 
@@ -190,25 +163,37 @@ mod tests {
             // Parse from UTC millis float
             let f = py.eval(c_str!("1759254091325.5388"), None, None).unwrap();
             let ms = f.extract::<EpochMillis>().unwrap();
-            assert_eq!("2025-09-30T17:41:31.325+00:00", ms.0.to_rfc3339());
+            assert_eq!(
+                "2025-09-30T17:41:31.325+00:00",
+                ms.as_utc_datetime().to_rfc3339()
+            );
 
             // Parse from UTC millis int
             let i = py.eval(c_str!("1759254091456"), None, None).unwrap();
             let ms = i.extract::<EpochMillis>().unwrap();
-            assert_eq!("2025-09-30T17:41:31.456+00:00", ms.0.to_rfc3339());
+            assert_eq!(
+                "2025-09-30T17:41:31.456+00:00",
+                ms.as_utc_datetime().to_rfc3339()
+            );
 
             // Parse from Python datetime ISO (8601)
             let iso = py
                 .eval(c_str!("'2025-09-30T12:34:56-05:00'"), None, None)
                 .unwrap();
             let ms = iso.extract::<EpochMillis>().unwrap();
-            assert_eq!("2025-09-30T17:34:56+00:00", ms.0.to_rfc3339());
+            assert_eq!(
+                "2025-09-30T17:34:56+00:00",
+                ms.as_utc_datetime().to_rfc3339()
+            );
 
             let iso = py
                 .eval(c_str!("'2025-11-04T18:03:02.088960-06:00'"), None, None)
                 .unwrap();
             let ms = iso.extract::<EpochMillis>().unwrap();
-            assert_eq!("2025-11-05T00:03:02.088960+00:00", ms.0.to_rfc3339());
+            assert_eq!(
+                "2025-11-05T00:03:02.088960+00:00",
+                ms.as_utc_datetime().to_rfc3339()
+            );
 
             // Try to parse invalid ISO string
             let invalid_date = py.eval(c_str!("'not-a-date'"), None, None).unwrap();

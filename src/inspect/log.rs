@@ -22,9 +22,9 @@ use crate::{
         model::{ChatMessage, ModelOutput, ModelUsage},
         scorer::Score,
     },
-    py::{Any, EpochMillis, py_call},
+    py::{Any, py_call},
     result::Result,
-    util::{PathExt, find_try_parents},
+    util::{EpochMillis, PathExt, find_try_parents},
 };
 
 pub const LOG_VERSION: u16 = 2;
