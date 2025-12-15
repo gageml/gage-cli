@@ -1,19 +1,12 @@
 use std::path::PathBuf;
 
 use clap::Args as ArgsTrait;
-use cliclack as cli;
 use console::style;
-use pyo3::Python;
 
 use crate::{
-    commands::log::common::print_log_table,
-    config::Config,
-    error::Error,
-    inspect::log::{LogFilter, list_logs_filter, resolve_log_dir},
-    profile::apply_profile,
-    py,
-    result::Result,
-    util::term_height,
+    commands::log::common2::print_log_table, config::Config, error::Error,
+    inspect::log::resolve_log_dir, inspect2::log::list_logs_filter, profile::apply_profile,
+    result::Result, util::term_height,
 };
 
 #[derive(ArgsTrait, Debug)]
@@ -39,16 +32,6 @@ pub struct Args {
     deleted: bool,
 }
 
-impl From<&Args> for LogFilter {
-    fn from(value: &Args) -> Self {
-        if value.deleted {
-            Self::Deleted
-        } else {
-            Self::None
-        }
-    }
-}
-
 pub fn main(args: Args, config: &Config) -> Result<()> {
     // Check incompatible options
     if args.more > 0 && args.limit.is_some() {
@@ -64,38 +47,32 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     apply_profile(config)?;
     let log_dir = resolve_log_dir(args.log_dir.as_ref());
 
-    py::init();
-    Python::attach(|py| {
-        let pb = cli::spinner();
-        pb.start("Reading logs");
-        let logs = list_logs_filter(py, &log_dir, &args)?;
-        pb.clear();
+    let logs = list_logs_filter(&log_dir, |l| l.is_deleted == args.deleted)?;
 
-        // Calc number of entries to show based on options
-        let count = std::cmp::min(
-            if args.all {
-                logs.len()
-            } else {
-                args.limit.unwrap_or_else(|| {
-                    let page_size = term_height() - 7;
-                    page_size * (args.more as usize + 1)
-                })
-            },
-            logs.len(),
+    // Calc number of entries to show based on options
+    let count = std::cmp::min(
+        if args.all {
+            logs.len()
+        } else {
+            args.limit.unwrap_or_else(|| {
+                let page_size = term_height() - 7;
+                page_size * (args.more as usize + 1)
+            })
+        },
+        logs.len(),
+    );
+
+    // Print table
+    print_log_table(logs[..count].iter());
+
+    // If table truncated show what happened
+    if count < logs.len() {
+        println!(
+            "{}",
+            style(format!("Showing {} of {} (-m for more)", count, logs.len()))
+                .dim()
+                .italic()
         );
-
-        // Print table
-        print_log_table(py, logs[..count].iter());
-
-        // If table truncated show what happened
-        if count < logs.len() {
-            println!(
-                "{}",
-                style(format!("Showing {} of {} (-m for more)", count, logs.len()))
-                    .dim()
-                    .italic()
-            );
-        }
-        Ok(())
-    })
+    }
+    Ok(())
 }

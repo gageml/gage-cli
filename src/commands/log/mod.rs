@@ -7,7 +7,6 @@ mod common2;
 pub mod delete;
 mod info;
 pub mod list;
-mod list2;
 mod purge;
 mod restore;
 pub mod review;
@@ -22,10 +21,6 @@ pub struct Args {
 pub enum Cmd {
     /// Show avaliable logs
     List(list::Args),
-
-    /// Show avaliable logs
-    #[command(hide = true)]
-    List2(list2::Args),
 
     /// Review logs
     Review(review::Args),
@@ -46,7 +41,6 @@ pub enum Cmd {
 pub fn main(args: Args, config: &Config) -> Result<()> {
     match args.cmd {
         Cmd::List(args) => list::main(args, config),
-        Cmd::List2(args) => list2::main(args, config),
         Cmd::Review(args) => review::main(args, config),
         Cmd::Info(args) => info::main(args, config),
         Cmd::Delete(args) => delete::main(args, config),

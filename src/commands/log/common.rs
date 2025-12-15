@@ -149,24 +149,6 @@ impl LogOpDialog {
     }
 }
 
-pub fn print_log_table<'a, Logs>(py: Python<'_>, logs: Logs)
-where
-    Logs: Iterator<Item = &'a EvalLogInfo>,
-{
-    let (table, errors) = logs_table(py, logs, true);
-    if table.count_rows() == 1 {
-        println!("No logs found");
-    } else {
-        println!("{table}");
-    }
-    if !errors.is_empty() {
-        println!(
-            "{}",
-            style("One or more logs could not be loaded. See above for details.").on_red()
-        )
-    }
-}
-
 type ReadErrorLogIds = Vec<String>;
 
 pub fn logs_table<'a, Logs>(py: Python<'_>, logs: Logs, index: bool) -> (Table, ReadErrorLogIds)
