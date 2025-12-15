@@ -1,14 +1,49 @@
-# `gage log info` command
+# Log info (working tests for review-2)
 
-    >>> run("gage log info --help")  # +diff
-    Show log info
-    ⤶
-    Usage: gage log info [OPTIONS] <ID>
-    ⤶
-    Arguments:
-      <ID>  Eval ID
-    ⤶
-    Options:
-          --log-dir <LOG_DIR>  Log directory
-      -v, --verbose            Show more detail
-      -h, --help               Print help
+Generate a log with a test task.
+
+    >>> cd(make_temp_dir())
+
+    >>> write_file("test.py", """
+    ... from inspect_ai import task, Task
+    ...
+    ... @task
+    ... def test():
+    ...     return Task(model="mockllm/model")
+    ... """)
+
+    >>> run("gage run test -i '' -y", quiet=True)
+
+    >>> ls("logs")  # +parse
+    {timestamp}_{task}_{log_id}.eval
+
+Show log info.
+
+    >>> run(f"gage log info {log_id}")  # +parse +table
+    ╭─────────┬────────────────────────╮
+    │ Log     │ {log_id_}              │
+    ├─────────┼────────────────────────┤
+    │ Task    │ test                   │
+    │ Started │ now                    │
+    │ Status  │ success                │
+    │ Dataset │                        │
+    │ Samples │ 1                      │
+    │ Model   │ mockllm/model          │
+    ╰─────────┴────────────────────────╯
+
+    >>> assert log_id_ == log_id
+
+Show info with verbose option.
+
+    >>> run(f"gage log info {log_id} --verbose")  # +parse +table
+    ╭─────────┬────────────────────────────────────────────────╮
+    │ Log     │ {}                                             │
+    ├─────────┼────────────────────────────────────────────────┤
+    │ Task    │ test                                           │
+    │ Started │ now                                            │
+    │ Status  │ success                                        │
+    │ Dataset │                                                │
+    │ Samples │ 1                                              │
+    │ Model   │ mockllm/model                                  │
+    │ File    │ {}                                             │
+    ╰─────────┴────────────────────────────────────────────────╯
