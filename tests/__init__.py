@@ -19,7 +19,13 @@ def run(
     strip_trailing_spaces=True,
     quiet: bool = False,
     timeout: float = 10.0,
+    cols: int = 68,
 ):
+    if cols:
+        if env:
+            env["COLUMNS"] = str(cols)
+        else:
+            env = {"COLUMNS": str(cols)}
     p = _proc(cmd, cwd, env, delenv)
     out, err = p.communicate(timeout=timeout)
     assert err is None
@@ -191,6 +197,8 @@ TABLE_SUBS = [
     (re.compile(" +│"), " │"),
     (re.compile("╰─+"), "╰─"),
     (re.compile("─+╯"), "─╯"),
+    (re.compile("─+┼"), "─┼"),
+    (re.compile("─+┤"), "─┤"),
 ]
 
 
@@ -234,6 +242,7 @@ __all__ = [
     "option_table",
     "run",
     "sleep",
+    "time",
     "touch",
     "write_file",
 ]

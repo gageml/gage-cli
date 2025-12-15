@@ -34,7 +34,9 @@ pub fn split_path_or_env(path: Option<&str>, env_name: &str) -> Vec<String> {
 }
 
 pub fn term_width() -> usize {
-    terminal_size().map(|(w, _h)| w.0 as usize).unwrap_or(60)
+    std::env::var("COLUMNS")
+        .and_then(|v| v.parse().map_err(|_| std::env::VarError::NotPresent))
+        .unwrap_or_else(|_| terminal_size().map(|(w, _h)| w.0 as usize).unwrap_or(60))
 }
 
 pub fn term_height() -> usize {

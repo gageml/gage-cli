@@ -19,8 +19,9 @@
       -m, --model <MODEL>
               Task model
     ⤶
-              If not specified, environent variables GAGE_MODEL and INSPECT_EVAL_MODEL are used.
-              Otherwise the model defined by the task itself is used.
+              If not specified, environent variables GAGE_MODEL and
+              INSPECT_EVAL_MODEL are used. Otherwise the model defined
+              by the task itself is used.
     ⤶
           --target <TARGET>
               Expected output

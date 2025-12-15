@@ -178,7 +178,7 @@ where
     let mut colored_cells: Vec<(usize, usize, Color)> = Vec::new();
     let mut table = Builder::new();
     table.push_record([
-        "#", "Id", "Task", "Type", "Status", "Model", "Dataset", "Modified",
+        "#", "Id", "Task", "Type", "Status", "Model", "Dataset", "Started",
     ]);
     let mut errors = Vec::new();
     for (i, log) in logs.enumerate() {

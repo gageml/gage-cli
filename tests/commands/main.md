@@ -35,8 +35,8 @@
       [LOG]...
               The target logs to delete
     ⤶
-              LOGS may be specified using their # or Id. To delete a range, use one of 'START:', ':END',
-              or 'START:END'.
+              LOGS may be specified using their # or Id. To delete a
+              range, use one of 'START:', ':END', or 'START:END'.
     ⤶
     Options:
           --log-dir <LOG_DIR>
@@ -66,7 +66,8 @@
     ⤶
     Options:
       -m, --model <MODEL>      Task model (may be used more than once)
-      -T <TASK_ARG>            Task argument NAME=VALUE (may use more than once)
+      -T <TASK_ARG>            Task argument NAME=VALUE (may use more
+                               than once)
       -d, --dataset <NAME>     Evaluation dataset
       -l, --limit <N>          Limit the number of samples to evaluate
       -s, --sample <ID>        Task model (may be used more than once)
@@ -125,8 +126,9 @@
       -m, --model <MODEL>
               Task model
     ⤶
-              If not specified, environent variables GAGE_MODEL and INSPECT_EVAL_MODEL are used.
-              Otherwise the model defined by the task itself is used.
+              If not specified, environent variables GAGE_MODEL and
+              INSPECT_EVAL_MODEL are used. Otherwise the model defined
+              by the task itself is used.
     ⤶
           --target <TARGET>
               Expected output

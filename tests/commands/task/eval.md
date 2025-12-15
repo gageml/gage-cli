@@ -10,7 +10,8 @@
     ⤶
     Options:
       -m, --model <MODEL>      Task model (may be used more than once)
-      -T <TASK_ARG>            Task argument NAME=VALUE (may use more than once)
+      -T <TASK_ARG>            Task argument NAME=VALUE (may use more
+                               than once)
       -d, --dataset <NAME>     Evaluation dataset
       -l, --limit <N>          Limit the number of samples to evaluate
       -s, --sample <ID>        Task model (may be used more than once)
@@ -21,3 +22,4 @@
       -y, --yes                Don't prompt to for input
           --log-dir <LOG_DIR>  Log directory
       -h, --help               Print help
+

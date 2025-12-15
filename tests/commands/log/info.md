@@ -20,30 +20,30 @@ Generate a log with a test task.
 Show log info.
 
     >>> run(f"gage log info {log_id}")  # +parse +table
-    ╭─────────┬────────────────────────╮
-    │ Log     │ {log_id_}              │
-    ├─────────┼────────────────────────┤
-    │ Task    │ test                   │
-    │ Started │ now                    │
-    │ Status  │ success                │
-    │ Dataset │                        │
-    │ Samples │ 1                      │
-    │ Model   │ mockllm/model          │
-    ╰─────────┴────────────────────────╯
+    ╭─────────┬───────────────────────╮
+    │ Log     │ {log_id_}             │
+    ├─────────┼───────────────────────┤
+    │ Task    │ test                  │
+    │ Started │ now                   │
+    │ Status  │ success               │
+    │ Dataset │                       │
+    │ Samples │ 1                     │
+    │ Model   │ mockllm/model         │
+    ╰─────────┴───────────────────────╯
 
     >>> assert log_id_ == log_id
 
 Show info with verbose option.
 
     >>> run(f"gage log info {log_id} --verbose")  # +parse +table
-    ╭─────────┬────────────────────────────────────────────────╮
-    │ Log     │ {}                                             │
-    ├─────────┼────────────────────────────────────────────────┤
-    │ Task    │ test                                           │
-    │ Started │ now                                            │
-    │ Status  │ success                                        │
-    │ Dataset │                                                │
-    │ Samples │ 1                                              │
-    │ Model   │ mockllm/model                                  │
-    │ File    │ {}                                             │
-    ╰─────────┴────────────────────────────────────────────────╯
+    ╭─────────┬───────────────────────╮
+    │ Log     │ {}                    │
+    ├─────────┼───────────────────────┤
+    │ Task    │ test                  │
+    │ Started │ now                   │
+    │ Status  │ success               │
+    │ Dataset │                       │
+    │ Samples │ 1                     │
+    │ Model   │ mockllm/model         │
+    │ File    │ {}                    │
+    ╰─────────┴───────────────────────╯

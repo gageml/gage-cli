@@ -63,3 +63,42 @@ Applying the `table` option normalizes the values being compared.
     │ Config               │ {}      │
     │ Active profile       │         │
     ╰──────────────────────┴─────────╯
+
+Example with inner row border.
+
+    >>> table = """
+    ... ╭─────────┬────────────────────────╮
+    ... │ Log     │ 8GpboexKmmkLbuuqXtpDTQ │
+    ... ├─────────┼────────────────────────┤
+    ... │ Task    │ test                   │
+    ... │ Started │ now                    │
+    ... │ Status  │ success                │
+    ... │ Dataset │                        │
+    ... │ Samples │ 1                      │
+    ... │ Model   │ mockllm/model          │
+    ... ╰─────────┴────────────────────────╯
+    ... """.strip()
+
+    >>> print(normalize_table(table))
+    ╭─┬─╮
+    │ Log │ 8GpboexKmmkLbuuqXtpDTQ │
+    ├─┼─┤
+    │ Task │ test │
+    │ Started │ now │
+    │ Status │ success │
+    │ Dataset │ │
+    │ Samples │ 1 │
+    │ Model │ mockllm/model │
+    ╰─┴─╯
+
+    >>> print(table)  # +parse +table
+    ╭─────────┬───────────────────────╮
+    │ Log     │ {log_id_}             │
+    ├─────────┼───────────────────────┤
+    │ Task    │ test                  │
+    │ Started │ now                   │
+    │ Status  │ success               │
+    │ Dataset │                       │
+    │ Samples │ 1                     │
+    │ Model   │ mockllm/model         │
+    ╰─────────┴───────────────────────╯
