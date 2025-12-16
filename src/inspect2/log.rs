@@ -19,6 +19,13 @@ pub struct LogInfo {
 }
 
 impl LogInfo {
+    pub fn expect_local_path(&self) -> &str {
+        if !self.name.starts_with("file://") {
+            panic!("Non-local log: {}", self.name);
+        }
+        self.name.split_at(7).1
+    }
+
     pub fn short_log_id(&self) -> &str {
         self.log_id
             .split_at_checked(6)
@@ -127,6 +134,9 @@ impl TryFrom<&LogInfo> for LogHeader {
         }
         let path = &value.name[7..];
         let file = File::open(path)?;
+
+        // TODO - move to general zip facility
+
         let mut buffer = vec![0u8; RECOMMENDED_BUFFER_SIZE];
         let archive = ZipArchive::from_file(file, &mut buffer)?;
 

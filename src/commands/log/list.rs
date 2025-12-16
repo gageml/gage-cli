@@ -62,7 +62,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     );
 
     // Print table
-    print_log_table(logs[..count].iter());
+    print_log_table(&logs[..count]);
 
     // If table truncated show what happened
     if count < logs.len() {
