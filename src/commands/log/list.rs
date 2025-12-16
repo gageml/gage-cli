@@ -35,18 +35,17 @@ pub struct Args {
 pub fn main(args: Args, config: &Config) -> Result<()> {
     // Check incompatible options
     if args.more > 0 && args.limit.is_some() {
-        return Err(Error::general("--more and --limit cannot both be used"));
+        return Err(Error::custom("--more and --limit cannot both be used"));
     }
     if args.more > 0 && args.all {
-        return Err(Error::general("--more and --all cannot both be used"));
+        return Err(Error::custom("--more and --all cannot both be used"));
     }
     if args.all && args.limit.is_some() {
-        return Err(Error::general("--all and --limit cannot both be used"));
+        return Err(Error::custom("--all and --limit cannot both be used"));
     }
 
     apply_profile(config)?;
     let log_dir = resolve_log_dir(args.log_dir.as_ref());
-
     let logs = list_logs_filter(&log_dir, |l| l.is_deleted == args.deleted)?;
 
     // Calc number of entries to show based on options

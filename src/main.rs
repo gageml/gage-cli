@@ -113,7 +113,7 @@ fn init_config(args: &Args) -> Result<Config> {
 
 fn not_found_msg(e: Error) -> Error {
     match e {
-        Error::IO(e) if e.kind() == io::ErrorKind::NotFound => Error::general(format!(
+        Error::IO(e) if e.kind() == io::ErrorKind::NotFound => Error::custom(format!(
             "Config file '{e}' not found\n\nCreate this file to define profiles."
         )),
         _ => e,

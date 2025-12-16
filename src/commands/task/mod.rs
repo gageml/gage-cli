@@ -135,7 +135,7 @@ fn select_task_impl<'py>(
 
     // Have multiple tasks - error if yes arg
     if yes_arg {
-        return Err(Error::general(format!(
+        return Err(Error::custom(format!(
             "Found multiple tasks\n\nSpecify one of: {}",
             tasks
                 .into_iter()

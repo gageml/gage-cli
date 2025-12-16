@@ -64,13 +64,12 @@ impl Config {
     }
 
     pub fn from_file(path: &Path) -> Result<Self> {
-        let mut file = File::open(path).map_err(|e| {
-            Error::general(format!("Cannot read {}: {}", path.to_string_lossy(), e))
-        })?;
+        let mut file = File::open(path)
+            .map_err(|e| Error::custom(format!("Cannot read {}: {}", path.to_string_lossy(), e)))?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let mut config: Self =
-            toml::from_str(&contents).map_err(|e| Error::general(e.to_string()))?;
+            toml::from_str(&contents).map_err(|e| Error::custom(e.to_string()))?;
         config.path = path.into();
         Ok(config)
     }

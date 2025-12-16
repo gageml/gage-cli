@@ -38,7 +38,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     })?;
 
     if logs.is_empty() {
-        return Err(Error::general(format!(
+        return Err(Error::custom(format!(
             "No logs matching '{}'\n\
                 \n\
                 Try 'gage logs list' for a list of logs.",
@@ -53,7 +53,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
             .sorted()
             .collect::<Vec<_>>()
             .join(", ");
-        return Err(Error::general(format!(
+        return Err(Error::custom(format!(
             "{}\n\
                 \n\
                 Use the full log ID instead.",

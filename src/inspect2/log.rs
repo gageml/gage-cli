@@ -150,7 +150,7 @@ impl TryFrom<&LogInfo> for LogHeader {
                         return Ok(serde_json::from_reader(&mut verifier)?);
                     }
                     other => {
-                        return Err(Error::general(format!(
+                        return Err(Error::custom(format!(
                             "unexpected compression method '{other:?}' for header.json in {path}"
                         )));
                     }
@@ -158,7 +158,7 @@ impl TryFrom<&LogInfo> for LogHeader {
             }
         }
 
-        Err(Error::general(format!("missing header.json in {path}")))
+        Err(Error::custom(format!("missing header.json in {path}")))
     }
 }
 
@@ -199,7 +199,7 @@ impl TryFrom<DirEntry> for LogInfo {
             task,
             log_id,
         } = split_log_file_name(file_name.to_str().unwrap())
-            .ok_or_else(|| Error::general(format!("not a log: {}", path.to_string_lossy())))?;
+            .ok_or_else(|| Error::custom(format!("not a log: {}", path.to_string_lossy())))?;
         let name = format!("file://{}", path.to_string_lossy());
         let mtime = match EpochMillis::try_from_file_name_timestamp(timestamp) {
             Ok(v) => v,
@@ -242,27 +242,27 @@ impl EpochMillis {
         // Split at pos 10 for date and rest
         let (date, rest) = timestamp
             .split_at_checked(10)
-            .ok_or_else(|| Error::general("missing date"))?;
+            .ok_or_else(|| Error::custom("missing date"))?;
 
         // Expect time part to start with "T"
         let (delim, rest) = rest
             .split_at_checked(1)
-            .ok_or_else(|| Error::general("missing time delimiter at pos 11"))?;
+            .ok_or_else(|| Error::custom("missing time delimiter at pos 11"))?;
         if delim != "T" {
-            return Err(Error::general("unexpected char at pos 11, expected T"));
+            return Err(Error::custom("unexpected char at pos 11, expected T"));
         }
 
         // Split rest at pos 8 for time and rest
         let (time, rest) = rest
             .split_at_checked(8)
-            .ok_or_else(|| Error::general("missing time"))?;
+            .ok_or_else(|| Error::custom("missing time"))?;
 
         // Split rest at pos 1 for timezone sign direction and value
         let (tz_sign, tz_offset) = rest
             .split_at_checked(1)
-            .ok_or_else(|| Error::general("missing tz"))?;
+            .ok_or_else(|| Error::custom("missing tz"))?;
         if tz_sign != "-" && tz_sign != "+" {
-            return Err(Error::general("unexpected tz sign at pos 20"));
+            return Err(Error::custom("unexpected tz sign at pos 20"));
         }
 
         // Reconstruct to ISO by relacing "-" in time and tz offset with ":"
@@ -274,7 +274,7 @@ impl EpochMillis {
             tz_offset.replace("-", ":")
         );
         Self::from_python_iso(&iso_fmt)
-            .map_err(|e| Error::general(format!("invalid ISO date '{iso_fmt}': {e}")))
+            .map_err(|e| Error::custom(format!("invalid ISO date '{iso_fmt}': {e}")))
     }
 }
 

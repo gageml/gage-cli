@@ -117,7 +117,7 @@ impl LogOpDialog {
                 .into_iter()
                 .collect::<Vec<_>>();
             if selected.is_empty() {
-                return Err(Error::general("Log(s) not found"));
+                return Err(Error::custom("Log(s) not found"));
             }
 
             // Prompt user
@@ -350,14 +350,14 @@ impl LogSpec {
         match self {
             LogSpec::TablePos(table_pos) => {
                 let Some(log): Option<&EvalLogInfo> = logs_table.get(*table_pos - 1) else {
-                    return Err(Error::general("log index does not exist"));
+                    return Err(Error::custom("log index does not exist"));
                 };
                 selected.insert(SelectedLog::new(*table_pos, log.clone()));
             }
             LogSpec::TablePosRange(range) => {
                 for table_pos in range.clone() {
                     let Some(log): Option<&EvalLogInfo> = logs_table.get(table_pos - 1) else {
-                        return Err(Error::general("log range does not exist"));
+                        return Err(Error::custom("log range does not exist"));
                     };
                     selected.insert(SelectedLog::new(table_pos, log.clone()));
                 }
@@ -376,7 +376,7 @@ impl LogSpec {
                     .filter(|(_, log)| log.log_id.starts_with(prefix))
                     .collect::<Vec<_>>();
                 if matches.len() > 1 {
-                    return Err(Error::general(format!(
+                    return Err(Error::custom(format!(
                         "Log spec '{}' matches more than one log: {}\n\
                         \n\
                         Use the full log ID instead.",
@@ -408,7 +408,7 @@ impl LogSpec {
                 Ok(pos) => pos,
                 Err(_) if start.is_empty() => 1,
                 Err(_) => {
-                    return Err(Error::general(format!(
+                    return Err(Error::custom(format!(
                         "Invalid range value '{start}' - expected a number"
                     )));
                 }
@@ -420,7 +420,7 @@ impl LogSpec {
                 Ok(end) => Self::TablePosRange(start..end + 1),
                 Err(_) if end.is_empty() => Self::TablePosRangeFrom(start..),
                 Err(_) => {
-                    return Err(Error::general(format!(
+                    return Err(Error::custom(format!(
                         "Invalid range value '{end}' - expected a number"
                     )));
                 }
@@ -448,7 +448,7 @@ fn resolve_file_name(file_name: &str) -> Result<PathBuf> {
     if let Some(path) = file_name.strip_prefix("file://") {
         return Ok(path.into());
     }
-    Err(Error::general("log file type not supported"))
+    Err(Error::custom("log file type not supported"))
 }
 
 fn recoverable_deletion(file_path: PathBuf) -> Result<()> {

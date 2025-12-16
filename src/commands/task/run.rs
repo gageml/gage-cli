@@ -82,7 +82,7 @@ pub struct Args {
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
     if args.yes && args.input.is_none() {
-        return Err(Error::general("--input required with --yes"));
+        return Err(Error::custom("--input required with --yes"));
     }
     apply_profile_with_secrets(config)?;
     handle_dialog_result(run_dialog(args))
@@ -252,7 +252,7 @@ fn run_dialog(args: Args) -> Result<DialogResult> {
                             Task model requires the {pkg} Python package. Install \
                             it by running 'uv pip install {pkg}'."
                         );
-                        Err(Error::general(wrap(&msg, term_width())))
+                        Err(Error::custom(wrap(&msg, term_width())))
 
                     // Client init error
                     } else if let Some(captures) = CLIENT_INIT_ERROR_P.captures(&msg) {
@@ -267,7 +267,7 @@ fn run_dialog(args: Args) -> Result<DialogResult> {
                             \n\
                             Missing one of: {missing_env}"
                         );
-                        Err(Error::general(wrap(&msg, term_width())))
+                        Err(Error::custom(wrap(&msg, term_width())))
 
                     // Anything else pass through
                     } else {

@@ -183,7 +183,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
             println!("{val}");
             Ok(())
         } else {
-            Err(Error::general(format!("Unknown attr '{attr}'")))
+            Err(Error::custom(format!("Unknown attr '{attr}'")))
         }
     } else {
         println!("{table}");

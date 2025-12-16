@@ -29,7 +29,7 @@ pub struct Args {
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
     let profile_name = env::var("GAGE_PROFILE")
-        .map_err(|_| Error::general("GAGE_PROFILE not defined - no profile in use"))?;
+        .map_err(|_| Error::custom("GAGE_PROFILE not defined - no profile in use"))?;
     let config_path = &config.path;
     let dotenv = dotenvy::dotenv().ok();
     let status = profile_status(&profile_name, config_path, dotenv.as_deref(), args.verbose);

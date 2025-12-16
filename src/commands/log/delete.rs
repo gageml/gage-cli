@@ -40,7 +40,7 @@ pub struct Args {
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
     if args.specs.is_empty() && !args.all {
-        return Err(Error::general(
+        return Err(Error::custom(
             "--all flag must be provided if there is no target",
         ));
     }

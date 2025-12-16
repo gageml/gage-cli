@@ -35,7 +35,7 @@ impl Display for Error {
 
 impl From<String> for Error {
     fn from(value: String) -> Self {
-        Error::general(value)
+        Error::custom(value)
     }
 }
 
@@ -64,7 +64,7 @@ impl From<serde_json::Error> for Error {
 }
 
 impl Error {
-    pub fn general(msg: impl Display) -> Self {
+    pub fn custom(msg: impl Display) -> Self {
         Self::Custom(msg.to_string())
     }
 

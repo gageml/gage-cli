@@ -71,7 +71,7 @@ pub struct Args {
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
     if args.limit.is_some() && !args.samples.is_empty() {
-        return Err(Error::general("--limit cannot be used with samples"));
+        return Err(Error::custom("--limit cannot be used with samples"));
     }
     apply_profile_with_secrets(config)?;
     handle_dialog_result(eval_dialog(args))
