@@ -261,10 +261,7 @@ pub struct LogSelect;
 
 impl LogSelect {
     pub fn parse_specs(specs: &[String]) -> Result<Vec<LogSpec>> {
-        specs
-            .iter()
-            .map(|item| LogSpec::from_str(item))
-            .collect::<Result<Vec<_>>>()
+        specs.iter().map(|item| LogSpec::from_str(item)).collect()
     }
 
     pub fn select_logs(from: &[EvalLogInfo], specs: &[LogSpec]) -> Result<SelectedLogs> {
