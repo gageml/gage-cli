@@ -7,7 +7,7 @@
     ⤶
     Arguments:
       [SPEC]...
-              Log(s) to restsore.
+              Log(s) to restore
     ⤶
               SPEC may be a log ID, index position, or index position
               range in the form START:END.
@@ -88,7 +88,7 @@ Restore the run using the table index.
 
     >>> assert id_ == id
 
-    >>> run("gage list --deleted", cols=72)  # +parse +table
+    >>> run("gage list --deleted")
     No logs found
 
     >>> run("gage list", cols=72)  # +parse +table

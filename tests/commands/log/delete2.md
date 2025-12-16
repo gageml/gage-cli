@@ -7,7 +7,7 @@
     ⤶
     Arguments:
       [SPEC]...
-              Log(s) to delete.
+              Log(s) to delete
     ⤶
               SPEC may be a log ID, index position, or index position
               range in the form START:END.

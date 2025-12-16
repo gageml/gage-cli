@@ -14,7 +14,7 @@ use crate::{
 
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
-    /// Log(s) to restsore.
+    /// Log(s) to restore
     ///
     /// SPEC may be a log ID, index position, or index position range in
     /// the form START:END.
