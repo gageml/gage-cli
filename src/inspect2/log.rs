@@ -31,7 +31,7 @@ impl LogInfo {
 pub struct LogHeader {
     pub status: EvalStatus,
     pub eval: EvalSpec,
-    pub results: EvalResults,
+    pub results: Option<EvalResults>,
 }
 
 #[derive(Deserialize)]

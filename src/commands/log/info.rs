@@ -91,12 +91,16 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
 
             // Samples
             table.push_record(["Samples", &{
-                let samples = &header.results.total_samples;
-                let completed = &header.results.completed_samples;
-                if samples == completed {
-                    format!("{samples}")
+                if let Some(results) = header.results.as_ref() {
+                    let samples = results.total_samples;
+                    let completed = results.completed_samples;
+                    if samples == completed {
+                        format!("{samples}")
+                    } else {
+                        format!("{samples} ({completed} completed)")
+                    }
                 } else {
-                    format!("{samples} ({completed} completed)")
+                    "".into()
                 }
             }]);
 
