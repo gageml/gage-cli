@@ -4,7 +4,7 @@ use clap::Args as ArgsTrait;
 use console::style;
 
 use crate::{
-    commands::log::common2::print_log_table, config::Config, error::Error,
+    commands::log::common::print_log_table, config::Config, error::Error,
     inspect::log::resolve_log_dir, inspect2::log::list_logs_filter, profile::apply_profile,
     result::Result, util::term_height,
 };

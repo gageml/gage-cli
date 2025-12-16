@@ -29,14 +29,14 @@
     >>> run("gage delete --help")  # +diff
     Delete one or more logs
     ⤶
-    Usage: gage delete [OPTIONS] [LOG]...
+    Usage: gage delete [OPTIONS] [SPEC]...
     ⤶
     Arguments:
-      [LOG]...
-              The target logs to delete
+      [SPEC]...
+              Log(s) to delete
     ⤶
-              LOGS may be specified using their # or Id. To delete a
-              range, use one of 'START:', ':END', or 'START:END'.
+              SPEC may be a log ID, index position, or index position
+              range in the form START:END.
     ⤶
     Options:
           --log-dir <LOG_DIR>

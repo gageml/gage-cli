@@ -2,23 +2,23 @@ use clap::Args as ArgsTrait;
 use std::path::PathBuf;
 
 use crate::{
-    commands::log::common::{LogOpDialog, LogOpSuccessMap, LogSelect},
+    commands::log::common::{delete_log, log_op_dialog, parse_log_specs, select_logs},
     config::Config,
-    dialog::handle_dialog_result,
+    dialog::{DialogResult, handle_dialog_result},
     error::Error,
     inspect::log::resolve_log_dir,
-    plural,
+    inspect2::log::{LogInfo, list_logs},
     profile::apply_profile,
     result::Result,
 };
 
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
-    /// The target logs to delete
+    /// Log(s) to delete
     ///
-    /// LOGS may be specified using their # or Id. To delete a range, use
-    /// one of 'START:', ':END', or 'START:END'.
-    #[arg(value_name = "LOG")]
+    /// SPEC may be a log ID, index position, or index position range in
+    /// the form START:END.
+    #[arg(value_name = "SPEC")]
     specs: Vec<String>,
 
     /// Log directory
@@ -40,35 +40,49 @@ pub struct Args {
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
     if args.specs.is_empty() && !args.all {
-        return Err(Error::custom(
-            "--all flag must be provided if there is no target",
-        ));
+        return Err(Error::custom("--all required if there is no target"));
     }
-    let log_specs = LogSelect::parse_specs(&args.specs)?;
-    apply_profile(config)?;
+    let specs = parse_log_specs(args.specs.as_ref())?;
 
-    handle_dialog_result(
-        LogOpDialog::new("Delete logs")
-            .log_dir(resolve_log_dir(args.log_dir.as_ref()))
-            .log_specs(log_specs)
-            .show_prompt(!args.yes)
-            .confirm_prompt(move |selected| {
-                if args.permanent {
-                    format!(
-                        "You are about to PERMANENTLY delete {} {}. \
-                         This cannot be undone. Continue?",
-                        selected.len(),
-                        plural!("log", selected.len()),
-                    )
-                } else {
-                    format!(
-                        "You are about to delete {} {}. Continue?",
-                        selected.len(),
-                        plural!("log", selected.len())
-                    )
-                }
-            })
-            .run(|log| log.delete(args.permanent))
-            .on_success(|count| format!("{count} {} deleted", plural!("log", count))),
+    // Select logs
+    apply_profile(config)?;
+    let log_dir = resolve_log_dir(args.log_dir.as_ref());
+    let logs = list_logs(&log_dir)?;
+    let selected = select_logs(&logs, &specs);
+
+    // Log op dialog
+    let prompt = (!args.yes).then_some(|logs: &Vec<&LogInfo>| prompt(logs.len(), args.permanent));
+    let op = |log: &LogInfo| delete_log(log, args.permanent);
+    let finish = |deleted: Vec<_>| finish(deleted.len(), args.permanent);
+    handle_dialog_result(log_op_dialog("Delete logs", selected, prompt, op, finish))
+}
+
+fn prompt(count: usize, permanent: bool) -> (String, bool) {
+    (
+        format!(
+            "You are about to{} delete {} {}.{} Continue?",
+            if permanent { " PERMANENTLY" } else { "" },
+            count,
+            if count == 1 { "log" } else { "logs" },
+            if permanent {
+                " This cannot be undone."
+            } else {
+                ""
+            },
+        ),
+        !permanent,
     )
+}
+
+fn finish(count: usize, permanent: bool) -> DialogResult {
+    DialogResult::message(format!(
+        "{} {} {}",
+        count,
+        if count == 1 { "log" } else { "logs" },
+        if permanent {
+            "permanently deleted"
+        } else {
+            "deleted"
+        },
+    ))
 }
