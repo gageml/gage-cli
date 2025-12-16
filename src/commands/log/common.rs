@@ -13,7 +13,7 @@ use crate::{
     util::{TableExt, fit_path_name, relpath, term_width, wrap},
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum SelectSpec {
     Index(usize),
     Range((usize, usize)),
@@ -33,8 +33,9 @@ impl SelectSpec {
 }
 
 pub enum SelectSpecParseError {
-    BadRangeStart(String),
-    BadRangeEnd(String),
+    Start(String),
+    End(String),
+    Order(usize, usize),
 }
 
 impl TryFrom<&String> for SelectSpec {
@@ -51,14 +52,17 @@ impl TryFrom<&String> for SelectSpec {
                 1
             } else {
                 p1.parse::<usize>()
-                    .map_err(|_| SelectSpecParseError::BadRangeStart(p1.into()))?
+                    .map_err(|_| SelectSpecParseError::Start(p1.into()))?
             };
             if p2.is_empty() {
                 Ok(Self::From(start))
             } else {
                 let end = p2
                     .parse::<usize>()
-                    .map_err(|_| SelectSpecParseError::BadRangeEnd(p2.into()))?;
+                    .map_err(|_| SelectSpecParseError::End(p2.into()))?;
+                if start > end {
+                    return Err(SelectSpecParseError::Order(start, end));
+                }
                 Ok(Self::Range((start, end)))
             }
 
@@ -74,12 +78,15 @@ pub fn parse_log_specs(args: &[String]) -> Result<Vec<SelectSpec>> {
         .map(SelectSpec::try_from)
         .collect::<std::result::Result<Vec<SelectSpec>, SelectSpecParseError>>()
         .map_err(|e| match e {
-            SelectSpecParseError::BadRangeStart(s) => Error::custom(format!(
+            SelectSpecParseError::Start(s) => Error::custom(format!(
                 "invalid range start '{s}': expected a positive number"
             )),
-            SelectSpecParseError::BadRangeEnd(s) => Error::custom(format!(
-                "invalid range end '{s}': expected a positive number"
+            SelectSpecParseError::End(e) => Error::custom(format!(
+                "invalid range end '{e}': expected a positive number"
             )),
+            SelectSpecParseError::Order(s, e) => {
+                Error::custom(format!("invalid range '{s}:{e}': expected START:END"))
+            }
         })
 }
 
@@ -269,4 +276,74 @@ pub fn purge_log(log: &LogInfo) -> Result<()> {
     let path = PathBuf::from(log.expect_local_path());
     fs::remove_file(path)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_parse_log_specs() {
+        use crate::commands::log::common::{SelectSpec, parse_log_specs};
+        assert!(parse_log_specs(&[]).unwrap().is_empty());
+
+        let parsed = parse_log_specs(&[
+            "1".into(),
+            "3:12".into(),
+            ":5".into(),
+            "5:".into(),
+            "abc".into(),
+            "3:3".into(),
+        ])
+        .unwrap();
+        assert_eq!(parsed.len(), 6);
+        assert_eq!(parsed[0], SelectSpec::Index(1));
+        assert_eq!(parsed[1], SelectSpec::Range((3, 12)));
+        assert_eq!(parsed[2], SelectSpec::Range((1, 5)));
+        assert_eq!(parsed[3], SelectSpec::From(5));
+        assert_eq!(parsed[4], SelectSpec::Id("abc".into()));
+        assert_eq!(parsed[5], SelectSpec::Range((3, 3)));
+
+        let err = parse_log_specs(&["-1:2".into()]).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "invalid range start '-1': expected a positive number"
+        );
+
+        let err = parse_log_specs(&["1:-2".into()]).unwrap_err();
+        assert_eq!(
+            err.to_string(),
+            "invalid range end '-2': expected a positive number"
+        );
+
+        let err = parse_log_specs(&["2:1".into()]).unwrap_err();
+        assert_eq!(err.to_string(), "invalid range '2:1': expected START:END");
+    }
+
+    #[test]
+    fn test_select_spec_apply() {
+        use crate::commands::log::common::SelectSpec;
+        use crate::inspect2::log::LogInfo;
+        use crate::util::EpochMillis;
+
+        let log = LogInfo {
+            name: "".into(),
+            mtime: EpochMillis::default(),
+            task: "".into(),
+            log_id: "abcd".into(),
+            is_deleted: false,
+        };
+
+        assert_eq!(SelectSpec::Index(1).apply(&log, 1), true);
+        assert_eq!(SelectSpec::Index(1).apply(&log, 2), false);
+        assert_eq!(SelectSpec::Range((1, 2)).apply(&log, 1), true);
+        assert_eq!(SelectSpec::Range((1, 2)).apply(&log, 2), true);
+        assert_eq!(SelectSpec::Range((1, 2)).apply(&log, 3), false);
+        assert_eq!(SelectSpec::From(2).apply(&log, 3), true);
+        assert_eq!(SelectSpec::From(2).apply(&log, 2), true);
+        assert_eq!(SelectSpec::From(2).apply(&log, 1), false);
+        assert_eq!(SelectSpec::Id("a".into()).apply(&log, 1), true);
+        assert_eq!(SelectSpec::Id("abc".into()).apply(&log, 1), true);
+        assert_eq!(SelectSpec::Id("abcd".into()).apply(&log, 1), true);
+        assert_eq!(SelectSpec::Id("abce".into()).apply(&log, 1), false);
+        assert_eq!(SelectSpec::Id("abcde".into()).apply(&log, 1), false);
+    }
 }
