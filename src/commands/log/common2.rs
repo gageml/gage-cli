@@ -264,3 +264,9 @@ pub fn restore_log(log: &LogInfo) -> Result<()> {
     fs::rename(path, restore_path)?;
     Ok(())
 }
+
+pub fn purge_log(log: &LogInfo) -> Result<()> {
+    let path = PathBuf::from(log.expect_local_path());
+    fs::remove_file(path)?;
+    Ok(())
+}

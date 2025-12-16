@@ -9,6 +9,7 @@ mod delete2;
 mod info;
 pub mod list;
 mod purge;
+mod purge2;
 mod restore;
 mod restore2;
 pub mod review;
@@ -40,6 +41,10 @@ pub enum Cmd {
     /// Purge deleted logs
     Purge(purge::Args),
 
+    /// Purge deleted logs
+    #[command(hide = true)]
+    Purge2(purge2::Args),
+
     /// Restore deleted logs
     Restore(restore::Args),
 
@@ -56,6 +61,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
         Cmd::Delete(args) => delete::main(args, config),
         Cmd::Delete2(args) => delete2::main(args, config),
         Cmd::Purge(args) => purge::main(args, config),
+        Cmd::Purge2(args) => purge2::main(args, config),
         Cmd::Restore(args) => restore::main(args, config),
         Cmd::Restore2(args) => restore2::main(args, config),
     }
