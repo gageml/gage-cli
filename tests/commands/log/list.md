@@ -27,18 +27,13 @@ Generate some runs.
     ... def foo():
     ...     return Task(model="mockllm/model")
     ...
-    ... @task
-    ... def bar():
-    ...     return Task(model="mockllm/model")
-    ...
-    ... @dataset(task="bar")
-    ... def bar_samples():
+    ... @dataset
+    ... def samples():
     ...     return ["a", "b", "c"]
     ... """)
 
     >>> for i in range(4):
-    ...     task = "foo" if i % 2 else "bar"
-    ...     run(f"gage run {task} -i '' -y", quiet=True)
+    ...     run(f"gage run foo -i '' -y", quiet=True)
 
 List runs.
 
@@ -47,9 +42,9 @@ List runs.
     │ # │ Id     │ Task │ Type │ Status  │ Model         │ Dataset │ Started │
     ├───┼────────┼──────┼──────┼─────────┼───────────────┼─────────┼─────────┤
     │ 1 │ {id1}  │ foo  │ run  │ success │ mockllm/model │         │ now     │
-    │ 2 │ {id2}  │ bar  │ run  │ success │ mockllm/model │         │ now     │
+    │ 2 │ {id2}  │ foo  │ run  │ success │ mockllm/model │         │ now     │
     │ 3 │ {id3}  │ foo  │ run  │ success │ mockllm/model │         │ now     │
-    │ 4 │ {id4}  │ bar  │ run  │ success │ mockllm/model │         │ now     │
+    │ 4 │ {id4}  │ foo  │ run  │ success │ mockllm/model │         │ now     │
     ╰───┴────────┴──────┴──────┴─────────┴───────────────┴─────────┴─────────╯
 
 Verify log Ids.
@@ -57,9 +52,9 @@ Verify log Ids.
     >>> for name in sorted(ls_list("logs"), reverse=True):  # +parse
     ...     print(name)
     {}_foo_{id1_}.eval
-    {}_bar_{id2_}.eval
+    {}_foo_{id2_}.eval
     {}_foo_{id3_}.eval
-    {}_bar_{id4_}.eval
+    {}_foo_{id4_}.eval
 
     >>> assert id1_.startswith(id1)
     >>> assert id2_.startswith(id2)
@@ -75,7 +70,7 @@ Limit to 2 entries.
     │ # │ Id     │ Task │ Type │ Status  │ Model   │ Dataset │ Started │
     ├───┼────────┼──────┼──────┼─────────┼─────────┼─────────┼─────────┤
     │ 1 │ {id1_} │ foo  │ run  │ success │ mockll… │         │ now     │
-    │ 2 │ {id2_} │ bar  │ run  │ success │ mockll… │         │ now     │
+    │ 2 │ {id2_} │ foo  │ run  │ success │ mockll… │         │ now     │
     ╰───┴────────┴──────┴──────┴─────────┴─────────┴─────────┴─────────╯
     Showing 2 of 4 (-m for more)
 
