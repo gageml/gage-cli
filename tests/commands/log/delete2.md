@@ -1,4 +1,4 @@
-# Delete logs
+# `gage log delete` command
 
     >>> run("gage log delete2 --help")  # +diff
     Delete logs

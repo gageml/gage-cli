@@ -175,9 +175,13 @@ pub fn select_logs<'a>(
     logs: &'a [LogInfo],
     specs: &[SelectSpec],
 ) -> impl Iterator<Item = &'a LogInfo> {
-    logs.iter()
-        .enumerate()
-        .filter_map(|(i, log)| select_log(log, i + 1, specs).then_some(log))
+    logs.iter().enumerate().filter_map(|(i, log)| {
+        if specs.is_empty() {
+            Some(log)
+        } else {
+            select_log(log, i + 1, specs).then_some(log)
+        }
+    })
 }
 
 fn select_log(log: &LogInfo, table_index: usize, specs: &[SelectSpec]) -> bool {
@@ -237,27 +241,26 @@ pub fn delete_log(log: &LogInfo, permanent: bool) -> Result<()> {
             )));
         }
         fs::rename(path, deleted_path)?;
-
-        // let extension = path
-        //     .extension()
-        //     .map(OsStr::as_bytes)
-        //     .unwrap_or("".as_bytes());
-        // let deleted_extension = if extension.is_empty() {
-        //     String::from("deleted")
-        // } else {
-        //     format!("{}.deleted", String::from_utf8_lossy(extension))
-        // };
-        // if fs::exists(file_path.with_extension(deleted_extension)).unwrap_or(true) {
-        //     return Err(Error::Custom(format!(
-        //         "Deleted file already exists for {:?}",
-        //         file_path.file_name().unwrap_or_default()
-        //     )));
-        // } else if extension != "deleted".as_bytes() {
-        //     fs::rename(
-        //         file_path.clone(),
-        //         format!("{}.deleted", file_path.to_string_lossy()),
-        //     )?;
-        // }
     }
+    Ok(())
+}
+
+pub fn restore_log(log: &LogInfo) -> Result<()> {
+    let path = PathBuf::from(log.expect_local_path());
+    if path.extension().unwrap_or_default().to_string_lossy() != "deleted" {
+        return Err(Error::custom(format!(
+            "unexpected file extension for delete log {}",
+            relpath(&path).to_string_lossy()
+        )));
+    }
+    let restore_path = path.parent().unwrap().join(path.file_stem().unwrap());
+    if restore_path.exists() {
+        return Err(Error::custom(format!(
+            "CONFLICT: log {} exists and would be overwritten (see {})",
+            log.log_id,
+            relpath(&restore_path).to_string_lossy()
+        )));
+    }
+    fs::rename(path, restore_path)?;
     Ok(())
 }
