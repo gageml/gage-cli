@@ -189,6 +189,6 @@ fn eval_dialog(args: Args) -> Result<DialogResult> {
             log_dir.expect_string(),
         )?;
 
-        Ok(DialogResult::Done)
+        Ok(DialogResult::done())
     })
 }

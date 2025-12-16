@@ -10,6 +10,16 @@ pub enum DialogResult {
     Done,
 }
 
+impl DialogResult {
+    pub fn message(s: impl Into<String>) -> Self {
+        Self::Message(s.into())
+    }
+
+    pub fn done() -> Self {
+        Self::Done
+    }
+}
+
 pub fn handle_dialog_result(result: Result<DialogResult>) -> Result<()> {
     match &result {
         Ok(DialogResult::Done) => cli::outro(style("Done").green().bright())?,

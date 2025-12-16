@@ -222,7 +222,7 @@ fn run_dialog(args: Args) -> Result<DialogResult> {
                             cli::log::remark(format!("Score:\n\n{}", scores.join("\n\n")))?;
                         }
 
-                        Ok(DialogResult::Done)
+                        Ok(DialogResult::done())
                     }
                     EvalStatus::Error => {
                         let error = log.error.as_ref().expect("error for status");
