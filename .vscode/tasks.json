@@ -40,6 +40,9 @@
       "type": "process",
       "command": "groktest",
       "args": ["."],
+      "presentation": {
+        "panel": "dedicated"
+      },
       "options": { "env": { "GAGE_INSPECT": "../gage-inspect" } },
       "dependsOn": ["cargo: build"]
     },
