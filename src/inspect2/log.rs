@@ -4,11 +4,11 @@ use std::{
 };
 
 use rawzip::{RECOMMENDED_BUFFER_SIZE, ZipArchive};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{error::Error, result::Result, util::EpochMillis};
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct LogInfo {
     #[allow(dead_code)]
     pub name: String,

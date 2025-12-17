@@ -9,6 +9,7 @@ pub mod list;
 mod purge;
 mod restore;
 pub mod review;
+mod review2;
 
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
@@ -23,6 +24,10 @@ pub enum Cmd {
 
     /// Review logs
     Review(review::Args),
+
+    /// Review logs
+    #[command(hide = true)]
+    Review2(review2::Args),
 
     /// Show log info
     Info(info::Args),
@@ -41,6 +46,7 @@ pub fn main(args: Args, config: &Config) -> Result<()> {
     match args.cmd {
         Cmd::List(args) => list::main(args, config),
         Cmd::Review(args) => review::main(args, config),
+        Cmd::Review2(args) => review2::main(args, config),
         Cmd::Info(args) => info::main(args, config),
         Cmd::Delete(args) => delete::main(args, config),
         Cmd::Purge(args) => purge::main(args, config),

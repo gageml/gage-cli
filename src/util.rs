@@ -7,6 +7,7 @@ use std::{
 
 use chrono::{DateTime, FixedOffset, Local, ParseResult, Utc};
 use chrono_humanize::HumanTime;
+use serde::Serialize;
 use tabled::{
     Table,
     settings::{
@@ -253,6 +254,15 @@ impl EpochMillis {
     #[allow(dead_code)] // Used in py tests
     pub fn as_utc_datetime(&self) -> &DateTime<Utc> {
         &self.0
+    }
+}
+
+impl Serialize for EpochMillis {
+    fn serialize<S>(&self, ser: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        ser.serialize_i64(self.0.timestamp_millis())
     }
 }
 
