@@ -10,11 +10,12 @@ use crate::{error::Error, result::Result, util::EpochMillis};
 
 #[derive(Serialize, Debug)]
 pub struct LogInfo {
-    #[allow(dead_code)]
+    #[serde(skip_serializing)]
     pub name: String,
     pub mtime: EpochMillis,
     pub task: String,
     pub log_id: String,
+    #[serde(skip_serializing)]
     pub is_deleted: bool,
 }
 
