@@ -1,5 +1,6 @@
 use std::{
     fs::{self, DirEntry, File},
+    io::Read,
     path::Path,
 };
 
@@ -134,43 +135,53 @@ impl TryFrom<&LogInfo> for LogHeader {
             panic!("{}", value.name);
         }
         let path = &value.name[7..];
-        let file = File::open(path)?;
+        let header = log_file_header(path)?;
+        serde_json::from_str(&header)
+            .map_err(|e| Error::custom(format!("error decoding log header: {e}")))
+    }
+}
 
-        // TODO - move to general zip facility
+fn log_file_header(path: &str) -> Result<String> {
+    let file = File::open(path)?;
 
-        let mut buffer = vec![0u8; RECOMMENDED_BUFFER_SIZE];
-        let archive = ZipArchive::from_file(file, &mut buffer)?;
+    // TODO - move to general zip facility
 
-        let header_name_bytes = "header.json".as_bytes();
-        let mut entries = archive.entries(&mut buffer);
-        while let Some(entry) = entries.next_entry()? {
-            if entry.is_dir() {
-                continue;
-            }
-            if entry.file_path().as_bytes() == header_name_bytes {
-                let zip_entry = archive.get_entry(entry.wayfinder())?;
-                let reader = zip_entry.reader();
-                match entry.compression_method() {
-                    rawzip::CompressionMethod::Store => {
-                        let mut verifier = zip_entry.verifying_reader(reader);
-                        return Ok(serde_json::from_reader(&mut verifier)?);
-                    }
-                    rawzip::CompressionMethod::Deflate => {
-                        let inflater = flate2::read::DeflateDecoder::new(reader);
-                        let mut verifier = zip_entry.verifying_reader(inflater);
-                        return Ok(serde_json::from_reader(&mut verifier)?);
-                    }
-                    other => {
-                        return Err(Error::custom(format!(
-                            "unexpected compression method '{other:?}' for header.json in {path}"
-                        )));
-                    }
+    let mut buffer = vec![0u8; RECOMMENDED_BUFFER_SIZE];
+    let archive = ZipArchive::from_file(file, &mut buffer)?;
+
+    let header_name_bytes = "header.json".as_bytes();
+    let mut entries = archive.entries(&mut buffer);
+    while let Some(entry) = entries.next_entry()? {
+        if entry.is_dir() {
+            continue;
+        }
+        if entry.file_path().as_bytes() == header_name_bytes {
+            let zip_entry = archive.get_entry(entry.wayfinder())?;
+            let reader = zip_entry.reader();
+            match entry.compression_method() {
+                rawzip::CompressionMethod::Store => {
+                    let mut verifier = zip_entry.verifying_reader(reader);
+                    let mut s = String::new();
+                    verifier.read_to_string(&mut s)?;
+                    return Ok(s);
+                }
+                rawzip::CompressionMethod::Deflate => {
+                    let inflater = flate2::read::DeflateDecoder::new(reader);
+                    let mut verifier = zip_entry.verifying_reader(inflater);
+                    let mut s = String::new();
+                    verifier.read_to_string(&mut s)?;
+                    return Ok(s);
+                }
+                other => {
+                    return Err(Error::custom(format!(
+                        "unexpected compression method '{other:?}' for header.json in {}",
+                        path
+                    )));
                 }
             }
         }
-
-        Err(Error::custom(format!("missing header.json in {path}")))
     }
+    Err(Error::custom(format!("missing header.json in {}", path)))
 }
 
 #[allow(dead_code)]
@@ -228,6 +239,17 @@ impl TryFrom<DirEntry> for LogInfo {
             is_deleted,
         })
     }
+}
+
+pub fn read_log_header(log_dir: &Path, log_id: &str) -> Option<String> {
+    let path = fs::read_dir(log_dir).ok()?.find_map(|f| {
+        f.ok().and_then(|f| {
+            f.file_name()
+                .to_str()
+                .and_then(|name| name.contains(log_id).then(|| log_dir.join(name)))
+        })
+    })?;
+    log_file_header(path.to_str().unwrap()).ok()
 }
 
 struct LogNameParts<'a> {

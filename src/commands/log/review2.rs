@@ -20,8 +20,12 @@ use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
 
 use crate::{
-    config::Config, error::Error, inspect::log::resolve_log_dir, inspect2::log::list_logs,
-    profile::apply_profile, result::Result,
+    config::Config,
+    error::Error,
+    inspect::log::resolve_log_dir,
+    inspect2::log::{list_logs, read_log_header},
+    profile::apply_profile,
+    result::Result,
 };
 
 #[derive(ArgsTrait, Debug)]
@@ -50,7 +54,7 @@ async fn main_async(args: Args, config: &Config) -> Result<()> {
     // Listen addr
     let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
     let listener = TcpListener::bind(addr).await?;
-    eprintln!("Listening on 127.0.0.1:{}", args.port);
+    eprintln!("Listening on http://127.0.0.1:{}", args.port);
 
     // Handler for static content
     // TODO look relative to program bin for default location
@@ -173,6 +177,13 @@ trait ResponseExt {
             .unwrap()
     }
 
+    fn not_found() -> Response<Body> {
+        Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(Body::from("Not found"))
+            .unwrap()
+    }
+
     fn json(encoded: String) -> Response<Body> {
         Response::builder()
             .header(header::CONTENT_TYPE, "application/json")
@@ -190,12 +201,20 @@ async fn handle_req(
     log_dir: Arc<PathBuf>,
     static_: Static,
 ) -> Response<Body> {
-    if req.method() != &Method::GET {
+    if req.method() != Method::GET {
         return Response::bad_request();
     }
-    match req.uri().path() {
-        "/api/logs" => get_logs(&log_dir),
-        _ => handle_static(req, static_).await,
+    let path = req.uri().path();
+    if path.starts_with("/api/") {
+        if path == "/api/logs" {
+            get_logs(&log_dir)
+        } else if let Some(log_id) = path.strip_prefix("/api/logs/") {
+            get_log_header(&log_dir, log_id)
+        } else {
+            Response::not_found()
+        }
+    } else {
+        handle_static(req, static_).await
     }
 }
 
@@ -251,5 +270,12 @@ fn get_logs(log_dir: &Path) -> Response<Body> {
             log::error!("Error encoding logs: {e}");
             Response::server_error()
         }
+    }
+}
+
+fn get_log_header(log_dir: &Path, log_id: &str) -> Response<Body> {
+    match read_log_header(log_dir, log_id) {
+        Some(s) => Response::json(s),
+        None => Response::not_found(),
     }
 }
