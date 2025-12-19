@@ -1,12 +1,43 @@
 import fnmatch
 import os
+from queue import Empty, Queue
 import re
 import shlex
 import shutil
 import subprocess
 import tempfile
+from threading import Thread
 import time
 from typing import Any, cast
+
+from groktest import parse_type
+
+
+@parse_type("id", r"[a-zA-Z0-9]{22}")
+def parse_id(s: str):
+    return s
+
+
+@parse_type("isodate", r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+\-]\d{2}:\d{2}")
+def parse_isodate(s: str):
+    return s
+
+
+def _format_tz(s: str):
+    # Add ':' to tz component for parsing by `fromisoformat`
+    tz = s[19:]
+    if not tz or tz[0] == ".":  # dot -> tz is actually a decimal part
+        return s
+    if len(tz) == 5:
+        return s[:19] + tz[:3] + ":" + tz[3:]
+    else:
+        assert len(tz) == 7, s
+        return s[:19] + tz[:3] + ":" + tz[3:5] + ":" + tz[5:]
+
+
+def option_table(val: Any):
+    if True:
+        return normalize_table
 
 
 def run(
@@ -186,11 +217,6 @@ def ls_list(
     return paths if unsorted else sorted(paths)
 
 
-def option_table(val: Any):
-    if True:
-        return normalize_table
-
-
 TABLE_SUBS = [
     (re.compile("─+┬"), "─┬"),
     (re.compile("─+╮"), "─╮"),
@@ -226,12 +252,69 @@ def sleep(seconds: float):
     time.sleep(seconds)
 
 
+class Server:
+    def __init__(self, cmd: str, text: bool = True):
+        self._p = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=text,
+            shell=True,
+            bufsize=0,
+            close_fds=os.name == "posix",
+        )
+        assert self._p.stdout
+        self._q = Queue()
+        t = Thread(target=self._poll)
+        t.daemon = True
+        t.start()
+        self._stopped = False
+
+    def _poll(self):
+        assert self._p.stdout
+        while True:
+            line = self._p.stdout.readline()
+            if not line:
+                break
+            self._q.put(line)
+
+    def readline(self):
+        if self._stopped:
+            raise RuntimeError("server is stopped")
+        try:
+            return self._q.get_nowait()
+        except Empty:
+            return None
+
+    def readlines(self):
+        return iter(self.readline, None)
+
+    def print_output(self):
+        print("".join(self.readlines()), end="")
+
+    def stop(self, wait: float = 0.1):
+        status = self._p.poll()
+        if status is not None:
+            return status
+        self._p.terminate()
+        time.sleep(wait)
+        if self._p.poll() is None:
+            self._p.kill()
+            time.sleep(wait)
+        self._stopped = True
+        return self._p.poll()
+
+    def __del__(self):
+        self.stop()
+
+
 # Add build target dir to path unless running in CI
 if not os.getenv("CI"):
     _apply_project_paths()
 
 __all__ = [
     "Chdir",
+    "Server",
     "cat",
     "cd",
     "copy",
@@ -240,6 +323,8 @@ __all__ = [
     "make_temp_dir",
     "os",
     "option_table",
+    "parse_id",
+    "parse_isodate",
     "run",
     "sleep",
     "time",

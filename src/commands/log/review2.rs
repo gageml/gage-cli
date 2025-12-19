@@ -28,15 +28,17 @@ use crate::{
     result::Result,
 };
 
+const DEFAULT_PORT: u16 = 3000;
+
 #[derive(ArgsTrait, Debug)]
 pub struct Args {
     /// Log directory
     #[arg(long)]
     log_dir: Option<PathBuf>,
 
-    /// Port to listen on
-    #[arg(short, long, default_value = "3000")]
-    port: u16,
+    /// Port to listen on (3000)
+    #[arg(short, long)]
+    port: Option<u16>,
 }
 
 pub fn main(args: Args, config: &Config) -> Result<()> {
@@ -51,10 +53,30 @@ async fn main_async(args: Args, config: &Config) -> Result<()> {
     apply_profile(config)?;
     let log_dir = Arc::new(resolve_log_dir(args.log_dir.as_ref()));
 
-    // Listen addr
-    let addr = SocketAddr::from(([127, 0, 0, 1], args.port));
-    let listener = TcpListener::bind(addr).await?;
-    eprintln!("Listening on http://127.0.0.1:{}", args.port);
+    // Listen port is either explicit (option) or default. If default,
+    // retry up to 9 times for a free port starting with default and
+    // adding 1.
+    let mut port = args.port.unwrap_or(DEFAULT_PORT);
+    let mut bind_attempts = if args.port.is_some() { 0 } else { 10 };
+
+    // Find a free port
+    let listener = loop {
+        if bind_attempts == 0 {
+            break Err(Error::custom(
+                "Cannot find a free port. Use the '--port' option to specify a value.",
+            ));
+        }
+        let addr = SocketAddr::from(([127, 0, 0, 1], port));
+        bind_attempts -= 1;
+        match TcpListener::bind(addr).await {
+            Ok(v) => break Ok(v),
+            Err(e) => {
+                log::warn!("{e}");
+                port += 1;
+            }
+        }
+    }?;
+    eprintln!("Listening on http://127.0.0.1:{}", port);
 
     // Handler for static content
     // TODO look relative to program bin for default location
@@ -264,6 +286,28 @@ fn get_logs(log_dir: &Path) -> Response<Body> {
             return Response::server_error();
         }
     };
+
+    // Resolve header for each log and apply select field
+    let logs = logs
+        .into_iter()
+        .map(|log| {
+            let mut json = serde_json::Map::new();
+            if let Some(header) = read_log_header(log_dir, &log.log_id) {
+                match serde_json::from_str(&header) {
+                    Ok(v) => {
+                        json.insert("header".into(), v);
+                    }
+                    Err(e) => {
+                        log::error!("Error reading header for '{}': {}", log.log_id, e);
+                    }
+                }
+            }
+            json.insert("log_id".into(), serde_json::Value::String(log.log_id));
+            json
+        })
+        .collect::<Vec<_>>();
+
+    // Return encoded JSON
     match serde_json::to_string(&logs) {
         Ok(encoded) => Response::json(encoded),
         Err(e) => {
