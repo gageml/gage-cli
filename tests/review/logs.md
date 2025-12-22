@@ -91,6 +91,7 @@ Get the list of logs.
             "task_registry_name": "foo",
             "task_version": 0
           },
+          "invalidated": false,
           "plan": {
             "config": {},
             "name": "plan",
