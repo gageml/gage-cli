@@ -55,8 +55,8 @@ pub fn profile_status(
         Ok(config) => {
             let mut empty = true;
             if let Some(profile) = config.profiles.get(profile_name) {
-                if let Some(help) = profile.help.as_deref() {
-                    table.push_record(["Description", help]);
+                if let Some(description) = profile.description.as_deref() {
+                    table.push_record(["Description", description]);
                     last_non_env += 1;
                     empty = false;
                 }

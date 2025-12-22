@@ -6,9 +6,17 @@ Create a config file in a new directory.
 
     >>> write_file("gage.toml", """
     ... [profiles.foo]
+    ... description = "Test profile"
     ... env.FOO = "123"
     ... env.BAR = "abc"
     ... """)
+
+    >>> run("gage profile list")
+    ╭──────┬──────────────╮
+    │ Name │ Description  │
+    ├──────┼──────────────┤
+    │ foo  │ Test profile │
+    ╰──────┴──────────────╯
 
 Create a task that writes env to a file.
 
@@ -41,12 +49,13 @@ Env is not set.
 Run the task with an activated profile.
 
     >>> run("gage profile use foo")
-    ╭────────────────┬─────╮
-    │ Active profile │ foo │
-    ├────────────────┼─────┤
-    │ BAR            │ abc │
-    │ FOO            │ 123 │
-    ╰────────────────┴─────╯
+    ╭────────────────┬──────────────╮
+    │ Active profile │ foo          │
+    ├────────────────┼──────────────┤
+    │ Description    │ Test profile │
+    │ BAR            │ abc          │
+    │ FOO            │ 123          │
+    ╰────────────────┴──────────────╯
 
     >>> run("gage run test -i '' -y", quiet=True)
 

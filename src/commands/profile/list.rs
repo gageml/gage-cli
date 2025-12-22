@@ -23,7 +23,7 @@ pub fn main(config: &Config) -> Result<()> {
         .iter()
         .sorted_by(|(lhs, _), (rhs, _)| lhs.cmp(rhs))
     {
-        table.push_record([name, profile.help.as_deref().unwrap_or_default()]);
+        table.push_record([name, profile.description.as_deref().unwrap_or_default()]);
     }
     println!(
         "{}",

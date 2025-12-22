@@ -30,7 +30,7 @@ impl Default for Config {
 
 #[derive(Deserialize, Default, Debug)]
 pub struct Profile {
-    pub help: Option<String>,
+    pub description: Option<String>,
     pub secrets: Option<String>,
     pub log_dir: Option<String>,
 
@@ -84,7 +84,7 @@ mod tests {
         let config: Config = toml::from_str(
             r#"
             [profiles.foo]
-            help = "A sample profile"
+            description = "A sample profile"
             secrets = "secrets.json"
             log_dir = "logs"
             env.bar = "123"
@@ -96,7 +96,7 @@ mod tests {
         assert_eq!(1, config.profiles.len());
 
         let foo = &config.profiles["foo"];
-        assert_eq!("A sample profile", foo.help.as_ref().unwrap());
+        assert_eq!("A sample profile", foo.description.as_ref().unwrap());
         assert_eq!("logs", foo.log_dir.as_ref().unwrap());
         assert_eq!("secrets.json", foo.secrets.as_ref().unwrap());
         assert_eq!("123", foo.env["bar"]);
